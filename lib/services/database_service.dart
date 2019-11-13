@@ -13,6 +13,10 @@ class DatabaseService {
         : null;
   }
 
+  Stream<UserData> userData(String uid) {
+    return _userCollection.document(uid).snapshots().map(_mapUserData);
+  }
+
   Future<DatabaseResponse> updateUserData(String uid,
       {String displayName}) async {
     Map<String, dynamic> data = new Map();

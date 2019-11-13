@@ -3,7 +3,7 @@ const Filter = require('bad-words');
 
 const badwordsFilter = new Filter();
 const minLength = 4;
-const maxLength = 10;
+const maxLength = 15;
 
 
 // // Create and Deploy Your First Cloud Functions
