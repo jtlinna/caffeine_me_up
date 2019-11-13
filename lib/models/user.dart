@@ -1,5 +1,4 @@
 import 'package:cafeine_me_up/models/user_data.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class User {
   String uid;

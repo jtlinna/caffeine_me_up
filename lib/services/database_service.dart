@@ -13,13 +13,22 @@ class DatabaseService {
         : null;
   }
 
-  Future<DatabaseResponse> updateUserData(String uid, {String displayName}) {
+  Future<DatabaseResponse> updateUserData(String uid,
+      {String displayName}) async {
     Map<String, dynamic> data = new Map();
     if (displayName != null) {
       data['displayName'] = displayName;
     }
 
-    _userCollection.document(uid).setData(data);
+    try {
+      await _userCollection.document(uid).setData(data);
+      return new DatabaseResponse(data: null, errorMessage: null);
+    } catch (e) {
+      print('updateUserData failed: $e');
+      return new DatabaseResponse(
+          data: null,
+          errorMessage: new ErrorMessage(message: "Something went wrong"));
+    }
   }
 
   Future<DatabaseResponse> getUserData(String uid) async {
