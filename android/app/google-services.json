@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1081944426609",
+    "firebase_url": "https://cafeine-me-up.firebaseio.com",
+    "project_id": "cafeine-me-up",
+    "storage_bucket": "cafeine-me-up.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1081944426609:android:d2d4cd8cd5c412192933d0",
+        "android_client_info": {
+          "package_name": "com.tiberon.cafeinemeup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1081944426609-ic6uh6it7bgio0db2mjk7oqohhjtihtf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tiberon.cafeinemeup",
+            "certificate_hash": "c7e8cc23d765d7bca5990ed96077d00870a47e8c"
+          }
+        },
+        {
+          "client_id": "1081944426609-1bathfqjd267og7h224m9senjigo0rt3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCW4OoLFQMX11aaBewMV7rhAP1gwWlfiB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1081944426609-1bathfqjd267og7h224m9senjigo0rt3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
