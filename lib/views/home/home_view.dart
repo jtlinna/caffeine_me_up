@@ -1,8 +1,9 @@
 import 'package:cafeine_me_up/cards/home_card.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
-import 'package:cafeine_me_up/views/home/consume_caffeine_view.dart';
+import 'package:cafeine_me_up/views/home/consume_drink_view.dart';
 import 'package:cafeine_me_up/views/home/profile_view.dart';
+import 'package:cafeine_me_up/views/home/stats_view.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +35,7 @@ class _HomeViewState extends State<HomeView> {
           context: context,
           isScrollControlled: true,
           builder: (context) =>
-              _buildModalBottomSheet(context, ConsumeCaffeineView()));
+              _buildModalBottomSheet(context, ConsumeDrinkView()));
     }
 
     void _showGroups() {
@@ -53,12 +54,8 @@ class _HomeViewState extends State<HomeView> {
       showModalBottomSheet(
           context: context,
           isScrollControlled: true,
-          builder: (context) {
-            return Container(
-                child: Center(
-              child: Text("STATS"),
-            ));
-          });
+          builder: (context) =>
+              _buildModalBottomSheet(context, StatsView()));
     }
 
     return userData == null

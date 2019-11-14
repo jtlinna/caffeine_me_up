@@ -7,12 +7,12 @@ import 'package:cafeine_me_up/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ConsumeCaffeineView extends StatefulWidget {
+class ConsumeDrinkView extends StatefulWidget {
   @override
-  _ConsumeCaffeineViewState createState() => _ConsumeCaffeineViewState();
+  _ConsumeDrinkViewState createState() => _ConsumeDrinkViewState();
 }
 
-class _ConsumeCaffeineViewState extends State<ConsumeCaffeineView> {
+class _ConsumeDrinkViewState extends State<ConsumeDrinkView> {
   final DatabaseService _databaseService = DatabaseService();
   final List<int> _drinkOptions = [DrinkType.Coffee, DrinkType.Tea];
   final Duration _minInterval = Duration(minutes: 10);

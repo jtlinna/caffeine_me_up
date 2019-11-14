@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
                 buttonColor: Color(0xFFE24E42),
                 textTheme: ButtonTextTheme.primary),
             textTheme: template.textTheme.copyWith(
+              headline: template.textTheme.headline.copyWith(fontSize: 32, color: Colors.brown[600], fontWeight: FontWeight.bold),
               display1: TextStyle(fontSize: 12, color: Colors.brown[600]),
               display2: TextStyle(fontSize: 16, color: Colors.brown[600]),
               display3: TextStyle(fontSize: 24, color: Colors.brown[600]),
