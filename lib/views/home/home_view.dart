@@ -2,6 +2,7 @@ import 'package:cafeine_me_up/cards/home_card.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/views/home/consume_drink_view.dart';
+import 'package:cafeine_me_up/views/home/groups_view.dart';
 import 'package:cafeine_me_up/views/home/profile_view.dart';
 import 'package:cafeine_me_up/views/home/stats_view.dart';
 import 'package:cafeine_me_up/views/loading.dart';
@@ -42,12 +43,8 @@ class _HomeViewState extends State<HomeView> {
       showModalBottomSheet(
           context: context,
           isScrollControlled: true,
-          builder: (context) {
-            return Container(
-                child: Center(
-              child: Text("GROUPS"),
-            ));
-          });
+          builder: (context) =>
+              _buildModalBottomSheet(context, GroupsView()));
     }
 
     void _showStats() {
