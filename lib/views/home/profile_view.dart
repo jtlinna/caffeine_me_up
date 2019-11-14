@@ -19,8 +19,9 @@ class _ProfileViewState extends State<ProfileView> {
 
   String _newDisplayName = '';
 
-  List<Widget> _createColumn(UserData userData) {
+  List<Widget> _createColumn(BuildContext context, UserData userData) {
     List<Widget> widgets = <Widget>[];
+    final TextTheme textTheme = Theme.of(context).textTheme;
 
     if (_editingName) {
       widgets.add(Form(
@@ -43,13 +44,13 @@ class _ProfileViewState extends State<ProfileView> {
           icon: Icon(Icons.cancel),
           label: Text('Cancel'),
           onPressed: _cancelEditName,
-          textColor: Colors.brown[600],
+          textColor: textTheme.display2.color,
         ),
         FlatButton.icon(
           icon: Icon(Icons.done),
           label: Text('Confirm'),
           onPressed: () => _confirmEditName(userData.uid),
-          textColor: Colors.brown[600],
+          textColor: textTheme.display2.color,
         )
       ]));
     } else {
@@ -58,13 +59,13 @@ class _ProfileViewState extends State<ProfileView> {
         children: <Widget>[
           Text(
             'Display name: ${userData.displayName}',
-            style: TextStyle(fontSize: 16, color: Colors.brown[600]),
+            style: textTheme.display2,
           ),
           FlatButton.icon(
             icon: Icon(Icons.edit),
             label: Text('Edit'),
             onPressed: _editName,
-            textColor: Colors.brown[600],
+            textColor: textTheme.display2.color,
           )
         ],
       ));
@@ -133,7 +134,7 @@ class _ProfileViewState extends State<ProfileView> {
               padding: EdgeInsets.symmetric(horizontal: 50),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: _createColumn(userData),
+                children: _createColumn(context, userData),
               ),
             ),
           ],

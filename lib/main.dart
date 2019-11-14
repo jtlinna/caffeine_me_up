@@ -15,15 +15,21 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Caffeine me up!',
         theme: ThemeData(
-          canvasColor: Colors.transparent,
-          primaryColor: Colors.brown[500],
-          backgroundColor: Colors.brown[100],
-          errorColor: Colors.red[700],
-          accentColor: Colors.brown[300],
-          buttonTheme: template.buttonTheme.copyWith(
-              buttonColor: Color(0xFFE24E42),
-              textTheme: ButtonTextTheme.primary),
-        ),
+            canvasColor: Colors.transparent,
+            primaryColor: Colors.brown[500],
+            backgroundColor: Colors.brown[100],
+            errorColor: Colors.red[700],
+            accentColor: Colors.brown[300],
+            buttonTheme: template.buttonTheme.copyWith(
+                buttonColor: Color(0xFFE24E42),
+                textTheme: ButtonTextTheme.primary),
+            textTheme: template.textTheme.copyWith(
+              display1: TextStyle(fontSize: 12, color: Colors.brown[600]),
+              display2: TextStyle(fontSize: 16, color: Colors.brown[600]),
+              display3: TextStyle(fontSize: 24, color: Colors.brown[600]),
+              display4: TextStyle(fontSize: 32, color: Colors.brown[600]),
+              overline: TextStyle(fontSize: 12, color: Colors.brown[600])
+            )),
         home: MainView(),
       ),
     );
