@@ -75,7 +75,7 @@ class DatabaseService {
     }
 
     try {
-      await _userCollection.document(uid).setData(data);
+      await _userCollection.document(uid).setData(data, merge: true);
       return new DatabaseResponse(data: null, errorMessage: null);
     } catch (e) {
       print('updateUserData failed: $e');
