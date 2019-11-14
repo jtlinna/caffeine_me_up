@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class HomeCard extends StatelessWidget {
-  String image;
-  String label;
-  Function onPressed;
+  final String image;
+  final String label;
+  final Function onPressed;
 
   HomeCard({this.image, this.label, this.onPressed});
 
