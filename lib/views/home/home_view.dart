@@ -58,7 +58,7 @@ class _HomeViewState extends State<HomeView> {
     return userData == null
         ? Loading()
         : Scaffold(
-            appBar: AppBar(title: Text('Caffeine me up!'), actions: <Widget>[
+            appBar: AppBar(title: Text('Home'), actions: <Widget>[
               FlatButton.icon(
                 icon: Icon(Icons.person),
                 label: Text('Profile'),

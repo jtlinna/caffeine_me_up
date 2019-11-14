@@ -56,7 +56,7 @@ class _SignUpViewState extends State<SignUpView> {
         ? Loading()
         : Scaffold(
             appBar: AppBar(
-              title: Text('Sign Up to Caffeine me up!'),
+              title: Text('Sign Up'),
               actions: <Widget>[
                 FlatButton.icon(
                   icon: Icon(Icons.person),
