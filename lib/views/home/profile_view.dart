@@ -3,12 +3,9 @@ import 'package:cafeine_me_up/services/auth_service.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProfileView extends StatefulWidget {
-  UserData userData;
-
-  ProfileView({this.userData});
-
   @override
   _ProfileViewState createState() => _ProfileViewState();
 }
@@ -22,14 +19,14 @@ class _ProfileViewState extends State<ProfileView> {
 
   String _newDisplayName = '';
 
-  List<Widget> _createColumn() {
+  List<Widget> _createColumn(UserData userData) {
     List<Widget> widgets = <Widget>[];
 
     if (_editingName) {
       widgets.add(Form(
         key: _nameKey,
         child: TextFormField(
-          initialValue: widget.userData.displayName,
+          initialValue: userData.displayName,
           decoration: InputDecoration(
             labelText: 'Display name',
             prefixIcon: Icon(Icons.person),
@@ -51,7 +48,7 @@ class _ProfileViewState extends State<ProfileView> {
         FlatButton.icon(
           icon: Icon(Icons.done),
           label: Text('Confirm'),
-          onPressed: () => _confirmEditName(widget.userData.uid),
+          onPressed: () => _confirmEditName(userData.uid),
           textColor: Colors.brown[600],
         )
       ]));
@@ -60,7 +57,7 @@ class _ProfileViewState extends State<ProfileView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            'Display name: ${widget.userData.displayName}',
+            'Display name: ${userData.displayName}',
             style: TextStyle(fontSize: 16, color: Colors.brown[600]),
           ),
           FlatButton.icon(
@@ -112,6 +109,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    final UserData userData = Provider.of<UserData>(context);
     return Container(
       color: Colors.transparent,
       padding: EdgeInsets.only(top: 25),
@@ -136,7 +134,7 @@ class _ProfileViewState extends State<ProfileView> {
               padding: EdgeInsets.symmetric(horizontal: 50),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: _createColumn(),
+                children: _createColumn(userData),
               ),
             ),
           ],

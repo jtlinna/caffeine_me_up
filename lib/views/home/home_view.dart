@@ -1,6 +1,7 @@
 import 'package:cafeine_me_up/cards/home_card.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/auth_service.dart';
+import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/views/home/profile_view.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +17,17 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     final UserData userData = Provider.of<UserData>(context);
 
+    Widget _buildModalBottomSheet(BuildContext context, Widget widget) {
+            return StreamProvider<UserData>.value(
+                value: DatabaseService().userData(userData.uid),
+                child: widget);
+    }
+
     void _showProfile() {
       showModalBottomSheet(
           context: context,
           isScrollControlled: true,
-          builder: (context) {
-            return ProfileView(userData: userData);
-          });
+          builder: (context) => _buildModalBottomSheet(context, ProfileView()));
     }
 
     void _showConsume() {
@@ -31,8 +36,9 @@ class _HomeViewState extends State<HomeView> {
           isScrollControlled: true,
           builder: (context) {
             return Container(
-              child: Center(child: Text("CONSUME"),)
-            );
+                child: Center(
+              child: Text("CONSUME"),
+            ));
           });
     }
 
@@ -42,8 +48,9 @@ class _HomeViewState extends State<HomeView> {
           isScrollControlled: true,
           builder: (context) {
             return Container(
-              child: Center(child: Text("GROUPS"),)
-            );
+                child: Center(
+              child: Text("GROUPS"),
+            ));
           });
     }
 
@@ -53,8 +60,9 @@ class _HomeViewState extends State<HomeView> {
           isScrollControlled: true,
           builder: (context) {
             return Container(
-              child: Center(child: Text("STATS"),)
-            );
+                child: Center(
+              child: Text("STATS"),
+            ));
           });
     }
 
