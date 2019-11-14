@@ -114,7 +114,6 @@ class _ProfileViewState extends State<ProfileView> {
       color: Colors.transparent,
       padding: EdgeInsets.only(top: 25),
       child: Container(
-        // padding: EdgeInsets.fromLTRB(25, 50, 25, 0),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(50), topRight: Radius.circular(50)),

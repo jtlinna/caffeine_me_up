@@ -1,6 +1,5 @@
 import 'package:cafeine_me_up/cards/home_card.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
-import 'package:cafeine_me_up/services/auth_service.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/views/home/profile_view.dart';
 import 'package:cafeine_me_up/views/loading.dart';
