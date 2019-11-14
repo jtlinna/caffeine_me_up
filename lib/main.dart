@@ -15,9 +15,11 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Caffeine me up!',
         theme: ThemeData(
+          canvasColor: Colors.transparent,
           primaryColor: Colors.brown[500],
           backgroundColor: Colors.brown[100],
           errorColor: Colors.red[700],
+          accentColor: Colors.brown[300],
           buttonTheme: template.buttonTheme.copyWith(
               buttonColor: Color(0xFFE24E42),
               textTheme: ButtonTextTheme.primary),

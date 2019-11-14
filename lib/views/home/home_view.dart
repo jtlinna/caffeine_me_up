@@ -1,0 +1,109 @@
+import 'package:cafeine_me_up/cards/home_card.dart';
+import 'package:cafeine_me_up/models/user_data.dart';
+import 'package:cafeine_me_up/services/auth_service.dart';
+import 'package:cafeine_me_up/views/home/profile_view.dart';
+import 'package:cafeine_me_up/views/loading.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class HomeView extends StatefulWidget {
+  @override
+  _HomeViewState createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  @override
+  Widget build(BuildContext context) {
+    final UserData userData = Provider.of<UserData>(context);
+
+    void _showProfile() {
+      showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) {
+            return ProfileView(userData: userData);
+          });
+    }
+
+    void _showConsume() {
+      showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) {
+            return Container(
+              child: Center(child: Text("CONSUME"),)
+            );
+          });
+    }
+
+    void _showGroups() {
+      showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) {
+            return Container(
+              child: Center(child: Text("GROUPS"),)
+            );
+          });
+    }
+
+    void _showStats() {
+      showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) {
+            return Container(
+              child: Center(child: Text("STATS"),)
+            );
+          });
+    }
+
+    return userData == null
+        ? Loading()
+        : Scaffold(
+            appBar: AppBar(title: Text('Caffeine me up!'), actions: <Widget>[
+              FlatButton.icon(
+                icon: Icon(Icons.person),
+                label: Text('Profile'),
+                onPressed: _showProfile,
+                textColor: Theme.of(context).secondaryHeaderColor,
+              )
+            ]),
+            body: Container(
+              color: Theme.of(context).backgroundColor,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        HomeCard(
+                            image: 'images/coffee.png',
+                            label: 'Consume',
+                            onPressed: _showConsume),
+                      ]),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      HomeCard(
+                          image: 'images/group.png',
+                          label: 'Groups',
+                          onPressed: _showGroups),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      HomeCard(
+                          image: 'images/stats.png',
+                          label: 'Stats',
+                          onPressed: _showStats),
+                    ],
+                  )
+                ],
+              ),
+            ));
+  }
+}

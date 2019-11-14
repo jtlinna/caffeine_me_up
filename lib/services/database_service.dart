@@ -9,7 +9,7 @@ class DatabaseService {
 
   UserData _mapUserData(DocumentSnapshot snapshot) {
     return snapshot != null && snapshot.data != null
-        ? new UserData(displayName: snapshot.data['displayName'] ?? '')
+        ? new UserData(uid: snapshot.documentID, displayName: snapshot.data['displayName'] ?? '')
         : null;
   }
 
