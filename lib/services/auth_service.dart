@@ -16,10 +16,7 @@ class AuthService {
     }
 
     return new User(
-        uid: user.uid,
-        email: user.email,
-        verified: user.isEmailVerified
-        );
+        uid: user.uid, email: user.email, verified: user.isEmailVerified);
   }
 
   String _getErrorMessage(dynamic e) {
@@ -90,6 +87,58 @@ class AuthService {
       await _firebaseAuth.signOut();
     } catch (e) {
       print('signOut failed: $e');
+    }
+  }
+
+  Future<AuthResponse> updateEmail(String newEmail) async {
+    FirebaseUser user;
+    try {
+      user = await _firebaseAuth.currentUser();
+    } catch (e) {
+      return new AuthResponse(
+          user: null,
+          errorMessage: new ErrorMessage(message: _getErrorMessage(e)));
+    }
+
+    if (user == null) {
+      return new AuthResponse(
+          user: null, errorMessage: new ErrorMessage(message: 'Not logged in'));
+    }
+
+    try {
+      await user.updateEmail(newEmail);
+      return new AuthResponse(
+          user: _fromFirebaseUser(user), errorMessage: null);
+    } catch (e) {
+      return new AuthResponse(
+          user: _fromFirebaseUser(user),
+          errorMessage: new ErrorMessage(message: _getErrorMessage(e)));
+    }
+  }
+
+  Future<AuthResponse> resendVerificationEmail() async {
+    FirebaseUser user;
+    try {
+      user = await _firebaseAuth.currentUser();
+    } catch (e) {
+      return new AuthResponse(
+          user: null,
+          errorMessage: new ErrorMessage(message: _getErrorMessage(e)));
+    }
+
+    if (user == null) {
+      return new AuthResponse(
+          user: null, errorMessage: new ErrorMessage(message: 'Not logged in'));
+    }
+
+    try {
+      await user.sendEmailVerification();
+      return new AuthResponse(
+          user: _fromFirebaseUser(user), errorMessage: null);
+    } catch (e) {
+      return new AuthResponse(
+          user: _fromFirebaseUser(user),
+          errorMessage: new ErrorMessage(message: _getErrorMessage(e)));
     }
   }
 }
