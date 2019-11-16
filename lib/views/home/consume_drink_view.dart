@@ -83,7 +83,7 @@ class _ConsumeDrinkViewState extends State<ConsumeDrinkView> {
           children: <Widget>[
             AppBar(
               centerTitle: true,
-              title: Text('Consume caffeine'),
+              title: Text('Consume a drink'),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(50),
