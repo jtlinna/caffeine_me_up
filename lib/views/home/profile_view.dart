@@ -253,6 +253,7 @@ class _ProfileViewState extends State<ProfileView> {
           children: <Widget>[
             AppBar(
               centerTitle: true,
+              automaticallyImplyLeading: false,
               title: Text('Profile'),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(

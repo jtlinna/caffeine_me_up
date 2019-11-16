@@ -4,6 +4,8 @@ import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/utils/formatters.dart';
+import 'package:cafeine_me_up/views/home/home_scaffold.dart';
+import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -55,6 +57,9 @@ class _ConsumeDrinkViewState extends State<ConsumeDrinkView> {
   @override
   Widget build(BuildContext context) {
     final UserData userData = Provider.of<UserData>(context);
+    if(userData == null) {
+      return Loading();
+    }
 
     String lastDrinkConsumedAt = userData.lastConsumedDrink != null
         ? 'Consumed at ${formatDateTime(userData.lastConsumedDrink.consumedAt)}'
@@ -71,24 +76,13 @@ class _ConsumeDrinkViewState extends State<ConsumeDrinkView> {
           : DrinkType.Coffee;
     }
 
-    return Container(
-      color: Colors.transparent,
-      padding: EdgeInsets.only(top: 25),
-      child: Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(50), topRight: Radius.circular(50)),
-            color: Theme.of(context).backgroundColor),
+    return HomeScaffold(
+      title: "Consume drink",
+      body: Container(
+        color: Theme.of(context).backgroundColor,
+        padding: EdgeInsets.only(top: 25),
         child: Column(
           children: <Widget>[
-            AppBar(
-              centerTitle: true,
-              title: Text('Consume a drink'),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(50),
-                      topRight: Radius.circular(50))),
-            ),
             SizedBox(height: 50),
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 25),

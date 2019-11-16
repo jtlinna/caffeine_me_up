@@ -3,6 +3,7 @@ import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/views/home/consume_drink_view.dart';
 import 'package:cafeine_me_up/views/home/groups_view.dart';
+import 'package:cafeine_me_up/views/home/home_scaffold.dart';
 import 'package:cafeine_me_up/views/home/profile_view.dart';
 import 'package:cafeine_me_up/views/home/stats_view.dart';
 import 'package:cafeine_me_up/views/loading.dart';
@@ -19,88 +20,66 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     final UserData userData = Provider.of<UserData>(context);
 
-    Widget _buildModalBottomSheet(BuildContext context, Widget widget) {
-      return StreamProvider<UserData>.value(
-          value: DatabaseService().userData(userData.uid), child: widget);
+    void _openView(Widget widget) {
+      Navigator.push(
+          context,
+          PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) {
+            return StreamProvider<UserData>.value(
+                value: DatabaseService().userData(userData.uid), child: widget);
+          }, transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+            Offset begin = Offset(1.0, 0.0);
+            Offset end = Offset.zero;
+            Curve curve = Curves.ease;
+
+            Animatable<Offset> tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          }));
     }
 
-    void _showProfile() {
-      showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (context) => _buildModalBottomSheet(context, ProfileView()));
-    }
-
-    void _showConsume() {
-      showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (context) =>
-              _buildModalBottomSheet(context, ConsumeDrinkView()));
-    }
-
-    void _showGroups() {
-      showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (context) =>
-              _buildModalBottomSheet(context, GroupsView()));
-    }
-
-    void _showStats() {
-      showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (context) =>
-              _buildModalBottomSheet(context, StatsView()));
-    }
-
-    return userData == null
-        ? Loading()
-        : Scaffold(
-            appBar: AppBar(title: Text('Home'), actions: <Widget>[
-              FlatButton.icon(
-                icon: Icon(Icons.person),
-                label: Text('Profile'),
-                onPressed: _showProfile,
-                textColor: Theme.of(context).secondaryHeaderColor,
-              )
-            ]),
-            body: Container(
-              color: Theme.of(context).backgroundColor,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        HomeCard(
-                            image: 'images/coffee.png',
-                            label: 'Consume',
-                            onPressed: _showConsume),
-                      ]),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      HomeCard(
-                          image: 'images/group.png',
-                          label: 'Groups',
-                          onPressed: _showGroups),
-                      SizedBox(
-                        width: 20,
-                      ),
-                      HomeCard(
-                          image: 'images/stats.png',
-                          label: 'Stats',
-                          onPressed: _showStats),
-                    ],
-                  )
-                ],
+    return HomeScaffold(
+        title: 'Home',
+        body: Container(
+          color: Theme.of(context).backgroundColor,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    HomeCard(
+                        image: 'images/coffee.png',
+                        label: 'Consume',
+                        onPressed: () => _openView(ConsumeDrinkView())),
+                  ]),
+              SizedBox(
+                height: 20,
               ),
-            ));
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  HomeCard(
+                      image: 'images/group.png',
+                      label: 'Groups',
+                      onPressed: () => _openView(GroupsView())),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  HomeCard(
+                      image: 'images/stats.png',
+                      label: 'Stats',
+                      onPressed: () => _openView(StatsView())),
+                ],
+              )
+            ],
+          ),
+        ));
   }
 }
