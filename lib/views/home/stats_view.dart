@@ -36,7 +36,7 @@ class StatsView extends StatelessWidget {
                         decoration: BoxDecoration(
                             color: Theme.of(context).accentColor,
                             borderRadius:
-                                BorderRadius.all(Radius.circular(25))),
+                                BorderRadius.circular(25)),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
