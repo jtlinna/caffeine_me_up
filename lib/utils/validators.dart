@@ -1,10 +1,14 @@
-final RegExp _displayNameRegex = RegExp(r"^[a-zA-Z0-9]*$");
+final RegExp _nameRegex = RegExp(r"^[a-zA-Z0-9 ]*$");
+
 final int _minDisplayNameLength = 4;
 final int _maxDisplayNameLength = 15;
 
 final RegExp _emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
 final int _minPasswordLength = 8;
+
+final int _minGroupNameLength = 4;
+final int _maxGroupNameLength = 15;
 
 String validateDisplayName(String value) {
   if (value.length < _minDisplayNameLength) {
@@ -15,8 +19,24 @@ String validateDisplayName(String value) {
     return 'Display name cannot exceed $_minDisplayNameLength characters';
   }
 
-  if (!_displayNameRegex.hasMatch(value)) {
+  if (!_nameRegex.hasMatch(value)) {
     return 'Display name can only contain alphanumeric characters';
+  }
+
+  return null;
+}
+
+String validateGroupName(String value) {
+  if (value.length < _minGroupNameLength) {
+    return 'Group name must be longer than $_minGroupNameLength characters';
+  }
+
+  if (value.length > _maxGroupNameLength) {
+    return 'Group name cannot exceed $_minGroupNameLength characters';
+  }
+
+  if (!_nameRegex.hasMatch(value)) {
+    return 'Group name can only contain alphanumeric characters';
   }
 
   return null;

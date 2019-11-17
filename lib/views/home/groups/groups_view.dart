@@ -16,20 +16,35 @@ class _GroupsViewState extends State<GroupsView> {
     BottomNavigationBarItem(icon: Icon(Icons.group_add), title: Text('Create'))
   ];
 
-  final _tabOptions = [MyGroupsView(), SearchGroupsView(), CreateGroupView()];
+  List<Widget> _tabOptions;
+
+  void _openMyGroups() {
+    setState(() {
+      _currentTab = 0;
+    });
+  }
 
   int _currentTab = 0;
+  @override
+  void initState() {
+    super.initState();
+    _tabOptions = [
+      MyGroupsView(),
+      SearchGroupsView(),
+      CreateGroupView(openMyGroupsCallback: _openMyGroups)
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return HomeScaffold(
       title: 'Groups',
       body: _tabOptions[_currentTab],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Theme.of(context).accentColor,
-        currentIndex: _currentTab,
-        onTap: (index) => setState(() => _currentTab = index),
-        items: _tabs
-      ),
+          backgroundColor: Theme.of(context).accentColor,
+          currentIndex: _currentTab,
+          onTap: (index) => setState(() => _currentTab = index),
+          items: _tabs),
     );
   }
 }

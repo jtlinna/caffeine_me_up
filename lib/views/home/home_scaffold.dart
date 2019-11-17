@@ -18,6 +18,7 @@ class HomeScaffold extends StatelessWidget {
     void _showProfile() {
       showModalBottomSheet(
           context: context,
+          isScrollControlled: true,
           builder: (context) => StreamProvider<UserData>.value(
               value: DatabaseService().userData(userData.uid),
               child: ProfileView()));
