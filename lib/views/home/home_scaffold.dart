@@ -8,8 +8,9 @@ import 'package:provider/provider.dart';
 class HomeScaffold extends StatelessWidget {
   final String title;
   final Widget body;
+  final BottomNavigationBar bottomNavigationBar;
 
-  HomeScaffold({this.title, this.body});
+  HomeScaffold({this.title, this.body, this.bottomNavigationBar});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,7 @@ class HomeScaffold extends StatelessWidget {
                 textColor: Theme.of(context).secondaryHeaderColor,
               )
             ]),
-            body: body);
+            body: body,
+            bottomNavigationBar: bottomNavigationBar);
   }
 }
