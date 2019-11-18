@@ -1,5 +1,6 @@
 import 'package:cafeine_me_up/models/database_response.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
+import 'package:cafeine_me_up/models/user.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
@@ -49,7 +50,17 @@ class _CreateGroupViewState extends State<CreateGroupView> {
 
   @override
   Widget build(BuildContext context) {
-    final UserData user = Provider.of<UserData>(context);
+    final UserData userData = Provider.of<UserData>(context);
+    final User user = Provider.of<User>(context);
+
+    if (!user.verified) {
+      return Container(
+          color: Theme.of(context).backgroundColor,
+          child: Center(
+            child: Text(
+                'Please verify your user account in order to create groups'),
+          ));
+    }
 
     return _creatingGroup
         ? Loading()
@@ -90,7 +101,7 @@ class _CreateGroupViewState extends State<CreateGroupView> {
                   SizedBox(height: 10),
                   RaisedButton(
                     child: Text('Create'),
-                    onPressed: () async => _createGroup(user),
+                    onPressed: () async => _createGroup(userData),
                   ),
                   SizedBox(height: _error != null ? 12.0 : 0.0),
                   Text(
