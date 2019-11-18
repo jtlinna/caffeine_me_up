@@ -4,6 +4,7 @@ import 'package:cafeine_me_up/models/database_response.dart';
 import 'package:cafeine_me_up/models/drink_data.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
+import 'package:cafeine_me_up/models/group_member_data.dart';
 import 'package:cafeine_me_up/models/group_tuple.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -42,21 +43,27 @@ class DatabaseService {
         : new List<GroupTuple>();
   }
 
-  List<UserData> _mapGroupMembers(DocumentSnapshot snapshot) {
+  List<GroupMemberData> _mapGroupMembers(DocumentSnapshot snapshot) {
     List<dynamic> members = snapshot.data['members'];
 
     if (members == null) {
-      return new List<UserData>();
+      return new List<GroupMemberData>();
     }
 
     return members.map((member) {
-      new UserData(
-          displayName: member['displayName'] ?? '',
-          consumedDrinks: _mapConsumedDrinks(member['consumedDrinks']),
-          lastConsumedDrink: DrinkData.fromMap(member['lastConsumedDrink']),
-          lifetimeConsumptions:
-              _mapLifetimeConsumptions(member['lifetimeConsumptions']),
-          groups: _mapUserGroups(member['groups']));
+      Map<dynamic, dynamic> userData = member['userData'];
+
+      return new GroupMemberData(
+          role: member['role'],
+          userData: new UserData(
+              uid: member['userId'],
+              displayName: userData['displayName'] ?? '',
+              consumedDrinks: _mapConsumedDrinks(userData['consumedDrinks']),
+              lastConsumedDrink:
+                  DrinkData.fromMap(userData['lastConsumedDrink']),
+              lifetimeConsumptions:
+                  _mapLifetimeConsumptions(userData['lifetimeConsumptions']),
+              groups: _mapUserGroups(userData['groups'])));
     }).toList();
   }
 
@@ -167,10 +174,10 @@ class DatabaseService {
       UserData creator, String groupName, bool isPrivate) async {
     try {
       String id = groupName.toLowerCase().trim().replaceAll(' ', '-');
-      print(id);
+
       DocumentSnapshot existingGroup =
           await _groupCollection.document(id).get();
-      print(existingGroup.data);
+
       if (existingGroup.data != null) {
         return new DatabaseResponse(
             data: null,
