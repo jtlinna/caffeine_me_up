@@ -3,6 +3,7 @@ import 'package:cafeine_me_up/models/group_data.dart';
 import 'package:cafeine_me_up/models/group_tuple.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/views/home/groups/group_members_view.dart';
+import 'package:cafeine_me_up/views/home/groups/manage_group_view.dart';
 import 'package:cafeine_me_up/views/home/home_scaffold.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -44,9 +45,7 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
     ];
 
     if (isAdmin) {
-      tabOptions.add(Container(
-          color: Theme.of(context).backgroundColor,
-          child: Center(child: Text('Manage group'))));
+      tabOptions.add(ManageGroupView());
       tabs.add(BottomNavigationBarItem(
           icon: Icon(Icons.settings), title: Text('Manage')));
     }
