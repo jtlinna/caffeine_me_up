@@ -164,7 +164,7 @@ class _ProfileViewState extends State<ProfileView> {
         icon: Icon(Icons.exit_to_app),
         label: Text('Sign Out'),
         onPressed: () async {
-          Navigator.pop(context);
+          Navigator.popUntil(context, (route) => route.isFirst);
           AuthService().signOut();
         },
         textColor: Theme.of(context).secondaryHeaderColor,
