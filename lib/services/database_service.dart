@@ -5,7 +5,6 @@ import 'package:cafeine_me_up/models/drink_data.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
 import 'package:cafeine_me_up/models/group_member_data.dart';
-import 'package:cafeine_me_up/models/group_invitation.dart';
 import 'package:cafeine_me_up/models/group_tuple.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,9 +15,6 @@ class DatabaseService {
 
   final CollectionReference _groupCollection =
       Firestore.instance.collection('groups');
-
-  final CollectionReference _groupInvitationCollection =
-      Firestore.instance.collection('groupInvitations');
 
   final Map<int, int> _emptyLifetimeConsumptions = {
     DrinkType.Coffee: 0,
@@ -215,32 +211,6 @@ class DatabaseService {
       return new DatabaseResponse(
           data: null,
           errorMessage: new ErrorMessage(message: "Something went wrong"));
-    }
-  }
-
-  Future<DatabaseResponse> inviteUser({String email, String groupId}) async {
-    try {
-      DocumentSnapshot document =
-          await _groupInvitationCollection.document(email).get();
-      if (document.exists &&
-          document.data != null &&
-          document.data[groupId] != null) {
-        return new DatabaseResponse(
-            data: null,
-            errorMessage: new ErrorMessage(
-                message: 'User $email has already been invited to this group'));
-      }
-
-      _groupInvitationCollection
-          .document(email)
-          .setData({groupId: 1}, merge: true);
-
-      return new DatabaseResponse(data: null, errorMessage: null);
-    } catch (e) {
-      print(e);
-      return new DatabaseResponse(
-          data: null,
-          errorMessage: ErrorMessage(message: "Something went wrong"));
     }
   }
 }

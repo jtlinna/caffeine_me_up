@@ -1,7 +1,6 @@
-import 'package:cafeine_me_up/models/database_response.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
-import 'package:cafeine_me_up/services/database_service.dart';
+import 'package:cafeine_me_up/services/http_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -14,16 +13,17 @@ class ManageGroupView extends StatefulWidget {
 
 class _ManageGroupViewState extends State<ManageGroupView> {
   final _formKey = GlobalKey<FormState>();
-  final DatabaseService _databaseService = DatabaseService();
+  final HttpService _httpService = HttpService();
 
   String _email = '';
 
   bool _loading = false;
-  ErrorMessage _error;
+  String _message = '';
+  bool _isErrorMessage = false;
 
   Future _inviteUser(String groupId) async {
     setState(() {
-      _error = null;
+      _message = null;
     });
 
     if (!_formKey.currentState.validate()) {
@@ -34,12 +34,13 @@ class _ManageGroupViewState extends State<ManageGroupView> {
       _loading = true;
     });
 
-    DatabaseResponse resp =
-        await _databaseService.inviteUser(email: _email, groupId: groupId);
+    ErrorMessage resp =
+        await _httpService.inviteUser(email: _email, groupId: groupId);
     setState(() {
       _loading = false;
       _email = '';
-      _error = resp.errorMessage;
+      _message = resp != null ? resp.message : 'Invitation sent';
+      _isErrorMessage = resp != null;
     });
   }
 
@@ -72,11 +73,18 @@ class _ManageGroupViewState extends State<ManageGroupView> {
                       child: Text('Invite'),
                       onPressed: () async => _inviteUser(groupData.groupId),
                     ),
-                    SizedBox(height: _error != null ? 12.0 : 0.0),
-                    Text(
-                      _error != null ? _error.message : '',
-                      style: TextStyle(
-                          color: Theme.of(context).errorColor, fontSize: 14),
+                    SizedBox(height: _message != null ? 12.0 : 0.0),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        _message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: _isErrorMessage
+                                ? Theme.of(context).errorColor
+                                : Theme.of(context).textTheme.display1.color,
+                            fontSize: 14),
+                      ),
                     )
                   ],
                 )),

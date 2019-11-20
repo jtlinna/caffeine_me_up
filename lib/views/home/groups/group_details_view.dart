@@ -1,6 +1,5 @@
 import 'package:cafeine_me_up/constants/user_role.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
-import 'package:cafeine_me_up/models/group_tuple.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/views/home/groups/group_members_view.dart';
 import 'package:cafeine_me_up/views/home/groups/manage_group_view.dart';
