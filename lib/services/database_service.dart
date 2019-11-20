@@ -1,13 +1,16 @@
 import 'package:cafeine_me_up/constants/drink_type.dart';
+import 'package:cafeine_me_up/constants/group_invitation_status.dart';
 import 'package:cafeine_me_up/constants/user_role.dart';
 import 'package:cafeine_me_up/models/database_response.dart';
 import 'package:cafeine_me_up/models/drink_data.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
+import 'package:cafeine_me_up/models/group_invitation.dart';
 import 'package:cafeine_me_up/models/group_member_data.dart';
 import 'package:cafeine_me_up/models/group_tuple.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class DatabaseService {
   final CollectionReference _userCollection =
@@ -15,6 +18,9 @@ class DatabaseService {
 
   final CollectionReference _groupCollection =
       Firestore.instance.collection('groups');
+
+  final CollectionReference _groupInvitationCollection =
+      Firestore.instance.collection('groupInvitations');
 
   final Map<int, int> _emptyLifetimeConsumptions = {
     DrinkType.Coffee: 0,
@@ -91,6 +97,24 @@ class DatabaseService {
         : null;
   }
 
+  List<GroupInvitation> _mapGroupInviation(DocumentSnapshot snapshot) {
+    List<GroupInvitation> result = new List<GroupInvitation>();
+    if (snapshot == null || snapshot.data == null) {
+      return result;
+    }
+
+    snapshot.data.forEach((groupId, invitation) {
+      int status = invitation['status'] ?? GroupInvitationStatus.Unknown;
+      if (status == GroupInvitationStatus.Open) {
+        result.add(new GroupInvitation(
+            groupId: groupId,
+            groupName: invitation['groupName'] ?? '',
+            status: invitation['status'] ?? -1));
+      }
+    });
+    return result;
+  }
+
   Map<String, dynamic> _createUserMap(
       {String displayName,
       List<DrinkData> consumedDrinks,
@@ -132,6 +156,13 @@ class DatabaseService {
 
   Stream<GroupData> groupData(String groupId) {
     return _groupCollection.document(groupId).snapshots().map(_mapGroupData);
+  }
+
+  Stream<List<GroupInvitation>> groupInvitations(String uid) {
+    return _groupInvitationCollection
+        .document(uid)
+        .snapshots()
+        .map(_mapGroupInviation);
   }
 
   Future<DatabaseResponse> updateUserData(String uid,
@@ -206,6 +237,24 @@ class DatabaseService {
       await _groupCollection.document(id).setData(groupData);
 
       return updateUserData(creator.uid, groups: userGroups);
+    } catch (e) {
+      print(e);
+      return new DatabaseResponse(
+          data: null,
+          errorMessage: new ErrorMessage(message: "Something went wrong"));
+    }
+  }
+
+  Future<DatabaseResponse> updateGroupInvitationStatus(
+      {@required String uid,
+      @required String groupId,
+      @required int newStatus}) async {
+    try {
+      await _groupInvitationCollection.document(uid).setData({
+        groupId: {'status': newStatus}
+      }, merge: true);
+
+      return new DatabaseResponse(data: null, errorMessage: null);
     } catch (e) {
       print(e);
       return new DatabaseResponse(

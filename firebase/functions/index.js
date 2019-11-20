@@ -171,8 +171,13 @@ exports.inviteUser = functions
             }
         }
 
+        console.log(`Adding invitation to group ${group.data().groupName} (ID ${groupId}) for ${user.uid}`);
+        console.log(userInvitations);
         await userInvitations.ref.set({
-            groupId: 1
+            groupId: {
+                groupName: group.data().groupName,
+                status: 1,
+            }
         }, {
             merge: true
         })
