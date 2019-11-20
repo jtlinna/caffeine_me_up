@@ -2,6 +2,7 @@ import 'package:cafeine_me_up/constants/user_role.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/views/home/groups/group_members_view.dart';
+import 'package:cafeine_me_up/views/home/groups/group_stats_view.dart';
 import 'package:cafeine_me_up/views/home/groups/manage_group_view.dart';
 import 'package:cafeine_me_up/views/home/home_scaffold.dart';
 import 'package:cafeine_me_up/views/loading.dart';
@@ -30,12 +31,7 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
         ? userData.groups[groupIdx].role == UserRole.Admin
         : false;
 
-    List<Widget> tabOptions = [
-      GroupMembersView(),
-      Container(
-          color: Theme.of(context).backgroundColor,
-          child: Center(child: Text('Group stats')))
-    ];
+    List<Widget> tabOptions = [GroupMembersView(), GroupStatsView()];
 
     List<BottomNavigationBarItem> tabs = [
       BottomNavigationBarItem(icon: Icon(Icons.group), title: Text('Members')),

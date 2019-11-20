@@ -1,4 +1,5 @@
 class DrinkType {
+  static const int All = -1;
   static const int Coffee = 1;
   static const int Tea = 2;
 
@@ -8,6 +9,8 @@ class DrinkType {
         return 'Coffee';
       case Tea:
         return 'Tea';
+      case All:
+        return 'All';
       default:
         return 'Unknown';
     }
@@ -19,6 +22,8 @@ class DrinkType {
         return 'images/coffee.png';
       case Tea:
         return 'images/tea.png';
+      case All:
+        return 'images/stats.png';
       default:
         return '';
     }
