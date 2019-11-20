@@ -79,6 +79,74 @@ exports.onUserDataUpdate = functions
         }
     });
 
+exports.onGroupInvitationUpdate = functions
+    .region('europe-west2')
+    .firestore
+    .document('/groupInvitations/{userId}')
+    .onUpdate(async (change) => {
+        const data = change.after.data();
+
+        if (data === undefined) {
+            console.warn('onUpdate triggered for undefined');
+            return null;
+        }
+
+        const userId = change.after.id;
+        const user = await admin.firestore().doc(`users/${userId}`).get();
+        const userData = user.data();
+
+        const invitations = Object.entries(data);
+        console.log(invitations);
+
+        if (userData.groups === null || userData.groups === undefined) {
+            userData.groups = [];
+        }
+
+        const readRequests = []
+        const openInvitations = {};
+        for (const [groupId, invitation] of invitations) {
+            switch (invitation.status) {
+                case 1:
+                    // Open
+                    openInvitations[`${groupId}`] = invitation;
+                    break;
+                case 2:
+                    // Accept
+                    readRequests.push(admin.firestore().doc(`groups/${groupId}`).get());
+                    userData.groups.push({
+                        id: groupId,
+                        name: invitation.groupName,
+                        role: 2
+                    });
+                    break;
+                case 3:
+                    // Reject
+                    break;
+                default:
+                    // Panic
+                    console.warn(`User ${userId}'s invitation to ${invitation.groupName} (ID ${groupId}) has unknown status ${invitation.status} and will be removed`);
+                    break;
+            }
+        }
+
+        const snapshots = await Promise.all(readRequests);
+        const updateRequests = [];
+        snapshots.forEach((snapshot) => {
+            const group = snapshot.data();
+            group.members.push({
+                role: 2,
+                userId: userId,
+                userData: userData
+            });
+            updateRequests.push(snapshot.ref.update(group));
+        });
+
+        updateRequests.push(user.ref.update(userData));
+        updateRequests.push(change.after.ref.set(openInvitations));
+
+        return Promise.all(updateRequests);
+    });
+
 // 0 Ok
 // -1 No user found
 // -2 Only admins allowed to invite
@@ -126,9 +194,6 @@ exports.inviteUser = functions
             }
         }
 
-        console.log(`Members in group ${groupId}`);
-        console.log(group.data().members);
-
         const inviter = group.data().members.find((member) => {
             return member.userId === context.auth.uid;
         });
@@ -141,7 +206,6 @@ exports.inviteUser = functions
         }
 
         if (inviter.role !== 1) {
-            console.log(`${context.auth.uid} is not an admin in group ${groupId}`);
             return {
                 status: -2
             }
@@ -152,7 +216,6 @@ exports.inviteUser = functions
         });
 
         if (existingMember !== undefined) {
-            console.log(`${user.uid} is already a member of ${groupId}`);
             return {
                 status: -3
             }
@@ -165,20 +228,18 @@ exports.inviteUser = functions
         if (userInvitations.data() !== undefined &&
             userInvitations.data().groupId !== null &&
             userInvitations.data().groupId !== undefined) {
-            console.log(`${user.uid} has already been invited to ${groupId}`);
             return {
                 status: -4
             }
         }
 
-        console.log(`Adding invitation to group ${group.data().groupName} (ID ${groupId}) for ${user.uid}`);
-        console.log(userInvitations);
-        await userInvitations.ref.set({
-            groupId: {
-                groupName: group.data().groupName,
-                status: 1,
-            }
-        }, {
+        const invitationData = {};
+        invitationData[groupId] = {
+            groupName: group.data().groupName,
+            status: 1,
+        };
+
+        await userInvitations.ref.set(invitationData, {
             merge: true
         })
         return {

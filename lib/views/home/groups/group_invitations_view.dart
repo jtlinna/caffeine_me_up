@@ -1,7 +1,6 @@
 import 'package:cafeine_me_up/constants/group_invitation_status.dart';
 import 'package:cafeine_me_up/models/group_invitation.dart';
 import 'package:cafeine_me_up/models/user.dart';
-import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -16,15 +15,43 @@ class _GroupInvitationsViewState extends State<GroupInvitationsView> {
   final DatabaseService _databaseService = DatabaseService();
 
   void _rejectInvitation(User user, GroupInvitation invitation) async {
-    _databaseService.updateGroupInvitationStatus(uid: user.uid, groupId: invitation.groupId, newStatus: GroupInvitationStatus.Rejected);
+    setState(() {
+      _updatingInvitation = true;
+    });
+
+    await _databaseService.updateGroupInvitationStatus(
+        uid: user.uid,
+        groupId: invitation.groupId,
+        newStatus: GroupInvitationStatus.Rejected);
+
+    setState(() {
+      _updatingInvitation = false;
+    });
   }
 
   void _acceptInvitation(User user, GroupInvitation invitation) async {
-    _databaseService.updateGroupInvitationStatus(uid: user.uid, groupId: invitation.groupId, newStatus: GroupInvitationStatus.Accepted);
+    setState(() {
+      _updatingInvitation = true;
+    });
+
+    await _databaseService.updateGroupInvitationStatus(
+        uid: user.uid,
+        groupId: invitation.groupId,
+        newStatus: GroupInvitationStatus.Accepted);
+
+    setState(() {
+      _updatingInvitation = false;
+    });
   }
+
+  bool _updatingInvitation = false;
 
   @override
   Widget build(BuildContext context) {
+    if (_updatingInvitation) {
+      return Loading();
+    }
+
     User user = Provider.of<User>(context);
     if (user == null) {
       return Loading();
@@ -76,13 +103,13 @@ class _GroupInvitationsViewState extends State<GroupInvitationsView> {
                                   ),
                                   Spacer(),
                                   FlatButton.icon(
-                                    textColor: theme.textTheme.display1.color,
+                                      textColor: theme.textTheme.display1.color,
                                       icon: Icon(Icons.cancel),
                                       label: Text('Reject'),
                                       onPressed: () async =>
                                           _rejectInvitation(user, invitation)),
                                   FlatButton.icon(
-                                    textColor: theme.textTheme.display1.color,
+                                      textColor: theme.textTheme.display1.color,
                                       icon: Icon(Icons.check),
                                       label: Text('Accept'),
                                       onPressed: () async =>
