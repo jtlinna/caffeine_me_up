@@ -1,8 +1,7 @@
-import 'package:cafeine_me_up/models/database_response.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/user.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
-import 'package:cafeine_me_up/services/database_service.dart';
+import 'package:cafeine_me_up/services/http_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +18,7 @@ class CreateGroupView extends StatefulWidget {
 
 class _CreateGroupViewState extends State<CreateGroupView> {
   final _formKey = GlobalKey<FormState>();
-  final DatabaseService _databaseService = DatabaseService();
+  final HttpService _httpService = HttpService();
 
   String _groupName = '';
   bool _isPrivate = false;
@@ -35,16 +34,16 @@ class _CreateGroupViewState extends State<CreateGroupView> {
       _creatingGroup = true;
     });
 
-    DatabaseResponse resp =
-        await _databaseService.createGroup(creator, _groupName, _isPrivate);
-    if (resp.errorMessage == null) {
+    ErrorMessage resp = await _httpService.createGroup(
+        groupName: _groupName, isPrivate: _isPrivate);
+    if (resp == null) {
       widget.openMyGroupsCallback();
       return;
     }
 
     setState(() {
       _creatingGroup = false;
-      _error = resp.errorMessage;
+      _error = resp;
     });
   }
 
@@ -52,6 +51,10 @@ class _CreateGroupViewState extends State<CreateGroupView> {
   Widget build(BuildContext context) {
     final UserData userData = Provider.of<UserData>(context);
     final User user = Provider.of<User>(context);
+
+    if (user == null || userData == null) {
+      return Loading();
+    }
 
     if (!user.verified) {
       return Container(
@@ -74,6 +77,7 @@ class _CreateGroupViewState extends State<CreateGroupView> {
                   Form(
                     key: _formKey,
                     child: TextFormField(
+                      initialValue: _groupName,
                       decoration: InputDecoration(
                         labelText: 'Group name',
                         prefixIcon: Icon(Icons.group),

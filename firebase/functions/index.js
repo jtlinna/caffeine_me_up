@@ -148,6 +148,94 @@ exports.onGroupInvitationUpdate = functions
     });
 
 // 0 Ok
+// -1 User not verified
+// -2 Group name invalid
+// -3 Group name already in use
+// -200 Invalid request / internal error
+exports.createGroup =
+    functions
+    .region('europe-west2')
+    .https
+    .onCall(async (data, context) => {
+        if (context.auth === null || context.auth === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        let authData;
+        try {
+            authData = await admin.auth().getUser(context.auth.uid);
+        } catch (e) {
+            console.error(`User ${context.auth.uid} tried to create a group but no auth data found`);
+            return {
+                status: -200
+            };
+        }
+
+        console.log(authData);
+
+        if (!authData.emailVerified) {
+            return {
+                status: -1
+            };
+        }
+
+        const groupName = data.groupName;
+        const isPrivate = data.isPrivate;
+
+        if (groupName !== badwordsFilter.clean(groupName)) {
+            return {
+                status: -2
+            };
+        }
+
+        const existingGroupSnapshot = await admin.firestore().collection('groups').where('groupName', '==', `${groupName}`).get();
+        if (!existingGroupSnapshot.empty) {
+            return {
+                status: -3
+            };
+        }
+
+        const userDataSnapshot = await admin.firestore().doc(`users/${authData.uid}`).get();
+        const userData = userDataSnapshot.data();
+        if (userData === undefined) {
+            console.error(`User ${authData.uid} doens't have matching user data`);
+            return {
+                status: -200
+            };
+        }
+
+        const newGroup = {
+            groupName: groupName,
+            isPrivate: isPrivate,
+            members: [{
+                role: 1,
+                userId: authData.uid,
+                userData: userData
+            }]
+        };
+
+        const newGroupDoc = await admin.firestore().collection('groups').add(newGroup);
+
+        if (userData.groups === null || userData.groups === undefined) {
+            userData.groups = [];
+        }
+
+        userData.groups.push({
+            id: newGroupDoc.id,
+            name: groupName,
+            role: 1
+        });
+
+        await userDataSnapshot.ref.update(userData);
+
+        return {
+            status: 0
+        };
+    });
+
+// 0 Ok
 // -1 No user found
 // -2 Only admins allowed to invite
 // -3 User already in group
@@ -157,7 +245,7 @@ exports.inviteUser = functions
     .region('europe-west2')
     .https
     .onCall(async (data, context) => {
-        if (context.auth === null) {
+        if (context.auth === null || context.auth === undefined) {
             return {
                 status: -200
             };

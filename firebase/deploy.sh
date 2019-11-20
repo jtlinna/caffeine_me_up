@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-firebase deploy --only functions:onGroupInvitationUpdate,functions:inviteUser
+firebase deploy --only functions:createGroup
