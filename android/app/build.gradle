@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.tiberon.cafeinemeup"
+        applicationId "com.tiberon.drinks_on_me.dev"
         minSdkVersion 16
         targetSdkVersion 28
         multiDexEnabled true
