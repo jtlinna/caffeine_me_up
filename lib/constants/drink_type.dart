@@ -23,7 +23,7 @@ class DrinkType {
       case Tea:
         return 'images/tea.png';
       case All:
-        return 'images/stats.png';
+        return 'images/all_drinks.png';
       default:
         return '';
     }

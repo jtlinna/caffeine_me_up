@@ -8,7 +8,7 @@ final RegExp _emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 final int _minPasswordLength = 8;
 
 final int _minGroupNameLength = 4;
-final int _maxGroupNameLength = 15;
+final int _maxGroupNameLength = 20;
 
 String validateDisplayName(String value) {
   if (value.length < _minDisplayNameLength) {
@@ -16,7 +16,7 @@ String validateDisplayName(String value) {
   }
 
   if (value.length > _maxDisplayNameLength) {
-    return 'Display name cannot exceed $_minDisplayNameLength characters';
+    return 'Display name cannot exceed $_maxDisplayNameLength characters';
   }
 
   if (!_nameRegex.hasMatch(value)) {
@@ -32,7 +32,7 @@ String validateGroupName(String value) {
   }
 
   if (value.length > _maxGroupNameLength) {
-    return 'Group name cannot exceed $_minGroupNameLength characters';
+    return 'Group name cannot exceed $_maxGroupNameLength characters';
   }
 
   if (!_nameRegex.hasMatch(value)) {

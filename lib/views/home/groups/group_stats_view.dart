@@ -66,6 +66,9 @@ class _GroupStatsViewState extends State<GroupStatsView> {
                               height: 50,
                               child: Image.asset(DrinkType.getImagePath(type)),
                             ),
+                            SizedBox(
+                              width: 10,
+                            ),
                             Text(DrinkType.asString(type),
                                 style: theme.textTheme.display2),
                           ],

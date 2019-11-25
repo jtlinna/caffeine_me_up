@@ -1,6 +1,5 @@
-import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
-import 'package:cafeine_me_up/services/http_service.dart';
+import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -12,36 +11,94 @@ class ManageGroupView extends StatefulWidget {
 }
 
 class _ManageGroupViewState extends State<ManageGroupView> {
-  final _formKey = GlobalKey<FormState>();
-  final HttpService _httpService = HttpService();
+  final _editKey = GlobalKey<FormState>();
+  final DatabaseService _databaseService = DatabaseService();
 
-  String _email = '';
+  String _newGroupName = '';
+  bool _editingName = false;
 
   bool _loading = false;
-  String _message = '';
-  bool _isErrorMessage = false;
 
-  Future _inviteUser(String groupId) async {
+  void _editName() {
     setState(() {
-      _message = null;
+      _editingName = true;
     });
+  }
 
-    if (!_formKey.currentState.validate()) {
+  void _confirmEditName(String groupId) {
+    if (!_editKey.currentState.validate()) {
       return;
     }
 
+    _databaseService.updateGroupData(
+        groupId: groupId, groupName: _newGroupName);
     setState(() {
-      _loading = true;
+      _editingName = false;
+      _newGroupName = '';
     });
+  }
 
-    ErrorMessage resp =
-        await _httpService.inviteUser(email: _email, groupId: groupId);
+  void _cancelEditName() {
     setState(() {
-      _loading = false;
-      _email = '';
-      _message = resp != null ? resp.message : 'Invitation sent';
-      _isErrorMessage = resp != null;
+      _editingName = false;
+      _newGroupName = '';
     });
+  }
+
+  List<Widget> _createColumn(BuildContext context, GroupData groupData) {
+    List<Widget> widgets = new List<Widget>();
+
+    TextTheme textTheme = Theme.of(context).textTheme;
+
+    if (_editingName) {
+      widgets.add(Form(
+        key: _editKey,
+        child: TextFormField(
+          initialValue: groupData.groupName,
+          decoration: InputDecoration(
+            labelText: 'Group name',
+            prefixIcon: Icon(Icons.group),
+          ),
+          validator: validateGroupName,
+          onChanged: (value) {
+            setState(() => _newGroupName = value);
+          },
+        ),
+      ));
+      widgets.add(
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        FlatButton.icon(
+          icon: Icon(Icons.cancel),
+          label: Text('Cancel'),
+          onPressed: _cancelEditName,
+          textColor: textTheme.display2.color,
+        ),
+        FlatButton.icon(
+          icon: Icon(Icons.done),
+          label: Text('Confirm'),
+          onPressed: () => _confirmEditName(groupData.groupId),
+          textColor: textTheme.display2.color,
+        )
+      ]));
+    } else {
+      widgets.add(Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            'Group name: ${groupData.groupName}',
+            style: textTheme.display2,
+          ),
+          FlatButton.icon(
+            icon: Icon(Icons.edit),
+            label: Text('Edit'),
+            onPressed: _editName,
+            textColor: textTheme.display2.color,
+          )
+        ],
+      ));
+    }
+
+    return widgets;
   }
 
   @override
@@ -50,44 +107,8 @@ class _ManageGroupViewState extends State<ManageGroupView> {
     return _loading
         ? Loading()
         : Container(
-            padding: EdgeInsets.symmetric(horizontal: 50),
+            padding: EdgeInsets.symmetric(horizontal: 35, vertical: 25),
             color: Theme.of(context).backgroundColor,
-            child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    TextFormField(
-                      initialValue: _email,
-                      decoration: InputDecoration(
-                        labelText: 'Invite user',
-                        prefixIcon: Icon(Icons.email),
-                      ),
-                      validator: validateEmail,
-                      onChanged: (value) {
-                        setState(() => _email = value);
-                      },
-                    ),
-                    SizedBox(height: 10),
-                    RaisedButton(
-                      child: Text('Invite'),
-                      onPressed: () async => _inviteUser(groupData.groupId),
-                    ),
-                    SizedBox(height: _message != null ? 12.0 : 0.0),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      child: Text(
-                        _message,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: _isErrorMessage
-                                ? Theme.of(context).errorColor
-                                : Theme.of(context).textTheme.display1.color,
-                            fontSize: 14),
-                      ),
-                    )
-                  ],
-                )),
-          );
+            child: Column(children: _createColumn(context, groupData)));
   }
 }

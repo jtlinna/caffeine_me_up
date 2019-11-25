@@ -7,11 +7,51 @@ const badwordsFilter = new Filter();
 const minLength = 4;
 const maxLength = 15;
 
-exports.sanitizer = functions
+const userRoleOwner = 1;
+const userRoleAdmin = 2;
+const userRoleMember = 3;
+
+const userRolesWithInviteRights = [
+    userRoleOwner,
+    userRoleAdmin
+];
+
+exports.onUserAccountCreate = functions
+    .region('europe-west2')
+    .auth
+    .user()
+    .onCreate(async (user) => {
+        const db = admin.firestore();
+        db.runTransaction(async (transaction) => {
+                try {
+                    const documentRef = db.collection('users').doc(`${user.uid}`);
+                    const snapshot = await transaction.get(documentRef);
+                    if (snapshot.data() !== undefined) {
+                        return Promise.resolve('Data already created')
+                    }
+
+                    return transaction.set(documentRef, {
+                        displayName: 'User'
+                    });
+                } catch (e) {
+                    return Promise.reject(e);
+                }
+            })
+            .then((result) => {
+                console.log(`Finished User data for ${user.uid} verification -- Result ${result}`);
+                return null;
+            })
+            .catch((error) => {
+                console.log(`Failed to verify User data when creating user ${user.uid} : ${error}`);
+                return null;
+            });
+    });
+
+exports.onUserDataWrite = functions
     .region('europe-west2')
     .firestore
     .document('/users/{userId}')
-    .onWrite((change) => {
+    .onWrite(async (change) => {
         const newUserData = change.after.exists ? change.after.data() : null;
 
         if (!newUserData || nameValid(newUserData)) {
@@ -116,7 +156,7 @@ exports.onGroupInvitationUpdate = functions
                     userData.groups.push({
                         id: groupId,
                         name: invitation.groupName,
-                        role: 2
+                        role: userRoleMember
                     });
                     break;
                 case 3:
@@ -134,7 +174,7 @@ exports.onGroupInvitationUpdate = functions
         snapshots.forEach((snapshot) => {
             const group = snapshot.data();
             group.members.push({
-                role: 2,
+                role: userRoleMember,
                 userId: userId,
                 userData: userData
             });
@@ -210,7 +250,7 @@ exports.createGroup =
             groupName: groupName,
             isPrivate: isPrivate,
             members: [{
-                role: 1,
+                role: userRoleOwner,
                 userId: authData.uid,
                 userData: userData
             }]
@@ -225,7 +265,7 @@ exports.createGroup =
         userData.groups.push({
             id: newGroupDoc.id,
             name: groupName,
-            role: 1
+            role: userRoleOwner
         });
 
         await userDataSnapshot.ref.update(userData);
@@ -293,7 +333,7 @@ exports.inviteUser = functions
             }
         }
 
-        if (inviter.role !== 1) {
+        if (!userRolesWithInviteRights.some((role) => role === inviter.role)) {
             return {
                 status: -2
             }

@@ -3,6 +3,7 @@ import 'package:cafeine_me_up/models/group_data.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/views/home/groups/group_members_view.dart';
 import 'package:cafeine_me_up/views/home/groups/group_stats_view.dart';
+import 'package:cafeine_me_up/views/home/groups/invite_user_view.dart';
 import 'package:cafeine_me_up/views/home/groups/manage_group_view.dart';
 import 'package:cafeine_me_up/views/home/home_scaffold.dart';
 import 'package:cafeine_me_up/views/loading.dart';
@@ -27,6 +28,11 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
     UserData userData = Provider.of<UserData>(context);
     int groupIdx =
         userData.groups.indexWhere((group) => group.id == groupData.groupId);
+
+    bool isOwner = groupIdx >= 0
+        ? userData.groups[groupIdx].role == UserRole.Owner
+        : false;
+
     bool isAdmin = groupIdx >= 0
         ? userData.groups[groupIdx].role == UserRole.Admin
         : false;
@@ -39,7 +45,13 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
           icon: Icon(Icons.show_chart), title: Text('Stats'))
     ];
 
-    if (isAdmin) {
+    if (isOwner || isAdmin) {
+      tabOptions.add(InviteUserView());
+      tabs.add(BottomNavigationBarItem(
+          icon: Icon(Icons.group_add), title: Text('Invite')));
+    }
+
+    if (isOwner) {
       tabOptions.add(ManageGroupView());
       tabs.add(BottomNavigationBarItem(
           icon: Icon(Icons.settings), title: Text('Manage')));
@@ -50,6 +62,7 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
       body: tabOptions[_currentTab],
       bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Theme.of(context).accentColor,
+          type: BottomNavigationBarType.fixed,
           currentIndex: _currentTab,
           onTap: (index) => setState(() => _currentTab = index),
           items: tabs),
