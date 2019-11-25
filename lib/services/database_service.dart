@@ -215,26 +215,4 @@ class DatabaseService {
           errorMessage: new ErrorMessage(message: "Something went wrong"));
     }
   }
-
-  Future<DatabaseResponse> updateGroupData(
-    {@required String groupId,
-     String groupName}
-  ) async {
-    try {
-      Map<String, dynamic> data = new Map();
-      if(groupName != null) {
-        data['groupName'] = groupName;
-      }
-
-      await _groupCollection.document(groupId).setData(data, merge: true);
-
-      return new DatabaseResponse(data: null, errorMessage: null);
-    } catch(e) {
-      print(e);
-      return new DatabaseResponse(
-        data: null,
-        errorMessage: new ErrorMessage(message: 'Something went wrong')
-      );
-    }
-  }
 }

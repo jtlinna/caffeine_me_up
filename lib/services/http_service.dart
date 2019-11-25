@@ -1,5 +1,6 @@
 import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/material.dart';
 
 class HttpService {
   final HttpsCallable _createGroupHandle =
@@ -8,6 +9,10 @@ class HttpService {
 
   final HttpsCallable _inviteUserHandle = CloudFunctions(region: 'europe-west2')
       .getHttpsCallable(functionName: 'inviteUser');
+
+  final HttpsCallable _updateGroupDataHandle =
+      CloudFunctions(region: 'europe-west2')
+          .getHttpsCallable(functionName: 'updateGroupData');
 
   Future<ErrorMessage> createGroup({String groupName, bool isPrivate}) async {
     try {
@@ -65,6 +70,30 @@ class HttpService {
       return new ErrorMessage(message: 'Something went wrong');
     } catch (e) {
       print('inviteUser: Got error: $e');
+      return new ErrorMessage(message: 'Something went wrong');
+    }
+  }
+
+  Future<ErrorMessage> updateGroupData(
+      {@required String groupId, String groupName}) async {
+    try {
+      HttpsCallableResult result =
+          await _updateGroupDataHandle.call({'groupId': groupId, 'groupName': groupName});
+      print('inviteUser: Got result : ${result.data}');
+      switch (result.data['status']) {
+        case 0:
+          return null;
+        case -1:
+          return new ErrorMessage(message: 'Invalid permissions');
+        default:
+          return new ErrorMessage(message: 'Something went wrong');
+      }
+    } on CloudFunctionsException catch (e) {
+      print(
+          'updateGroupData: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+      return new ErrorMessage(message: 'Something went wrong');
+    } catch (e) {
+      print('updateGroupData: Got error: $e');
       return new ErrorMessage(message: 'Something went wrong');
     }
   }

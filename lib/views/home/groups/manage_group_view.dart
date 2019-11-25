@@ -1,5 +1,6 @@
+import 'package:cafeine_me_up/models/error_message.dart';
 import 'package:cafeine_me_up/models/group_data.dart';
-import 'package:cafeine_me_up/services/database_service.dart';
+import 'package:cafeine_me_up/services/http_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
@@ -12,12 +13,13 @@ class ManageGroupView extends StatefulWidget {
 
 class _ManageGroupViewState extends State<ManageGroupView> {
   final _editKey = GlobalKey<FormState>();
-  final DatabaseService _databaseService = DatabaseService();
+  final HttpService _httpService = HttpService();
 
   String _newGroupName = '';
   bool _editingName = false;
 
   bool _loading = false;
+  ErrorMessage _error;
 
   void _editName() {
     setState(() {
@@ -25,16 +27,23 @@ class _ManageGroupViewState extends State<ManageGroupView> {
     });
   }
 
-  void _confirmEditName(String groupId) {
+  void _confirmEditName(String groupId) async {
     if (!_editKey.currentState.validate()) {
       return;
     }
 
-    _databaseService.updateGroupData(
+    setState(() {
+      _error = null;
+      _loading = true;
+    });
+
+    ErrorMessage error = await _httpService.updateGroupData(
         groupId: groupId, groupName: _newGroupName);
     setState(() {
       _editingName = false;
       _newGroupName = '';
+      _error = error;
+      _loading = false;
     });
   }
 
@@ -96,6 +105,16 @@ class _ManageGroupViewState extends State<ManageGroupView> {
           )
         ],
       ));
+    }
+
+    if (_error != null) {
+      widgets.addAll(<Widget>[
+        SizedBox(height: 12.0),
+        Text(
+          _error.message,
+          style: TextStyle(color: Theme.of(context).errorColor, fontSize: 14),
+        )
+      ]);
     }
 
     return widgets;

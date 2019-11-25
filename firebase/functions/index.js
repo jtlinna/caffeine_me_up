@@ -16,6 +16,10 @@ const userRolesWithInviteRights = [
     userRoleAdmin
 ];
 
+const userRolesWithManageRights = [
+    userRoleOwner
+];
+
 exports.onUserAccountCreate = functions
     .region('europe-west2')
     .auth
@@ -38,7 +42,8 @@ exports.onUserAccountCreate = functions
                 }
             })
             .then((result) => {
-                console.log(`Finished User data for ${user.uid} verification -- Result ${result}`);
+                console.log(`Finished User data verification for ${user.uid}`);
+                console.log(`${result}`);
                 return null;
             })
             .catch((error) => {
@@ -125,6 +130,7 @@ exports.onGroupInvitationUpdate = functions
     .document('/groupInvitations/{userId}')
     .onUpdate(async (change) => {
         const data = change.after.data();
+        const db = admin.firestore();
 
         if (data === undefined) {
             console.warn('onUpdate triggered for undefined');
@@ -132,7 +138,7 @@ exports.onGroupInvitationUpdate = functions
         }
 
         const userId = change.after.id;
-        const user = await admin.firestore().doc(`users/${userId}`).get();
+        const user = await db.doc(`users/${userId}`).get();
         const userData = user.data();
 
         const invitations = Object.entries(data);
@@ -152,7 +158,7 @@ exports.onGroupInvitationUpdate = functions
                     break;
                 case 2:
                     // Accept
-                    readRequests.push(admin.firestore().doc(`groups/${groupId}`).get());
+                    readRequests.push(db.doc(`groups/${groupId}`).get());
                     userData.groups.push({
                         id: groupId,
                         name: invitation.groupName,
@@ -230,14 +236,16 @@ exports.createGroup =
             };
         }
 
-        const existingGroupSnapshot = await admin.firestore().collection('groups').where('groupName', '==', `${groupName}`).get();
+        const db = admin.firestore();
+
+        const existingGroupSnapshot = await db.collection('groups').where('groupName', '==', `${groupName}`).get();
         if (!existingGroupSnapshot.empty) {
             return {
                 status: -3
             };
         }
 
-        const userDataSnapshot = await admin.firestore().doc(`users/${authData.uid}`).get();
+        const userDataSnapshot = await db.doc(`users/${authData.uid}`).get();
         const userData = userDataSnapshot.data();
         if (userData === undefined) {
             console.error(`User ${authData.uid} doens't have matching user data`);
@@ -256,7 +264,7 @@ exports.createGroup =
             }]
         };
 
-        const newGroupDoc = await admin.firestore().collection('groups').add(newGroup);
+        const newGroupDoc = await db.collection('groups').add(newGroup);
 
         if (userData.groups === null || userData.groups === undefined) {
             userData.groups = [];
@@ -315,7 +323,9 @@ exports.inviteUser = functions
             }
         }
 
-        const group = await admin.firestore().doc(`groups/${groupId}`).get();
+        const db = admin.firestore();
+
+        const group = await db.doc(`groups/${groupId}`).get();
         if (group === null) {
             return {
                 status: -200
@@ -349,7 +359,7 @@ exports.inviteUser = functions
             }
         }
 
-        const userInvitations = await admin.firestore().doc(`groupInvitations/${user.uid}`).get()
+        const userInvitations = await db.doc(`groupInvitations/${user.uid}`).get()
         console.log('User invitations');
         console.log(userInvitations.data());
 
@@ -370,6 +380,94 @@ exports.inviteUser = functions
         await userInvitations.ref.set(invitationData, {
             merge: true
         })
+        return {
+            status: 0,
+        };
+    });
+
+// 0 Ok
+// -1 Only owners are allowed to update group data
+// -200 Invalid request / internal error
+exports.updateGroupData = functions
+    .region('europe-west2')
+    .https
+    .onCall(async (data, context) => {
+
+        if (context.auth === null || context.auth === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        const groupId = data.groupId;
+        const db = admin.firestore();
+
+        const group = await db.doc(`groups/${groupId}`).get();
+        if (group === null) {
+            return {
+                status: -200
+            }
+        }
+
+        const author = group.data().members.find((member) => {
+            return member.userId === context.auth.uid;
+        });
+
+        if (author === undefined) {
+            console.warn(`Couldn't find ${context.auth.uid} from group ${groupId} even though he's the author for group data update`);
+            return {
+                status: -200
+            }
+        }
+
+        if (!userRolesWithManageRights.some((role) => role === author.role)) {
+            return {
+                status: -1
+            }
+        }
+
+        if (data.groupName === null || data.groupName === undefined) {
+            return {
+                status: 0
+            };
+        }
+
+        const getRequests = [];
+        group.data().members.forEach((member) => {
+            getRequests.push(db.doc(`users/${member.userId}`).get());
+        })
+
+        const groupName = data.groupName;
+        const updatedData = {
+            groupName: groupName
+        };
+
+        const snapshots = await Promise.all(getRequests);
+        const updateRequests = [
+            group.ref.set(updatedData, {
+                merge: true
+            })
+        ];
+
+        snapshots.forEach((snapshot) => {
+            const user = snapshot.data();
+            const updatedGroups = [];
+
+            if (user.groups !== null && user.groups !== undefined) {
+                user.groups.forEach((group) => {
+                    if (group.id === groupId) {
+                        group.name = groupName
+                    }
+
+                    updatedGroups.push(group);
+                });
+
+                user.groups = updatedGroups;
+                updateRequests.push(snapshot.ref.update(user));
+            }
+        });
+
+        await Promise.all(updateRequests);
         return {
             status: 0,
         };
