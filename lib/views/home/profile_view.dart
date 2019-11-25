@@ -262,7 +262,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             SizedBox(height: 10),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 50),
+              padding: EdgeInsets.symmetric(horizontal: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: _createColumn(context, user, userData),

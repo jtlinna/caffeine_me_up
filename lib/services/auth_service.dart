@@ -141,4 +141,9 @@ class AuthService {
           errorMessage: new ErrorMessage(message: _getErrorMessage(e)));
     }
   }
+
+  Future refreshCurrentUser() async {
+    FirebaseUser currentUser = await _firebaseAuth.currentUser();
+    currentUser.reload();
+  }
 }
