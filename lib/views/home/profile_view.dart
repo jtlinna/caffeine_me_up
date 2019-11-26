@@ -4,7 +4,9 @@ import 'package:cafeine_me_up/models/user.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/auth_service.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
+import 'package:cafeine_me_up/services/http_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
+import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,12 +17,14 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   final DatabaseService _databaseService = DatabaseService();
-  final AuthService _auth = new AuthService();
+  final AuthService _auth = AuthService();
+  final HttpService _httpService = HttpService();
 
   final _editKey = GlobalKey<FormState>();
 
   bool _editingName = false;
   bool _editingEmail = false;
+  bool _waitingForResponse = false;
 
   String _newDisplayName = '';
   String _newEmail = '';
@@ -160,14 +164,28 @@ class _ProfileViewState extends State<ProfileView> {
 
     widgets.addAll(<Widget>[
       SizedBox(height: 10),
-      RaisedButton.icon(
-        icon: Icon(Icons.exit_to_app),
-        label: Text('Sign Out'),
-        onPressed: () async {
-          Navigator.popUntil(context, (route) => route.isFirst);
-          AuthService().signOut();
-        },
-        textColor: Theme.of(context).secondaryHeaderColor,
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          RaisedButton.icon(
+            icon: Icon(Icons.delete),
+            label: Text('Delete account'),
+            onPressed: () => _showDeleteAccountDialog(context),
+            textColor: Theme.of(context).secondaryHeaderColor,
+          ),
+          SizedBox(
+            width: 20,
+          ),
+          RaisedButton.icon(
+            icon: Icon(Icons.exit_to_app),
+            label: Text('Sign Out'),
+            onPressed: () async {
+              Navigator.popUntil(context, (route) => route.isFirst);
+              AuthService().signOut();
+            },
+            textColor: Theme.of(context).secondaryHeaderColor,
+          ),
+        ],
       )
     ]);
     return widgets;
@@ -237,6 +255,49 @@ class _ProfileViewState extends State<ProfileView> {
     });
   }
 
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: new Text("Delete account"),
+            content: new Text("Are you sure you want to delete your account?"),
+            actions: <Widget>[
+              new FlatButton(
+                  child: new Text("Cancel"),
+                  onPressed: () => Navigator.pop(dialogContext)),
+              new FlatButton(
+                child: new Text("Delete"),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _confirmDeleteAccount(context);
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  void _confirmDeleteAccount(BuildContext context) async {
+    setState(() {
+      _error = null;
+      _editingName = false;
+      _editingEmail = false;
+      _waitingForResponse = true;
+    });
+
+    ErrorMessage error = await _httpService.deleteUser();
+    if (error != null) {
+      setState(() {
+        _waitingForResponse = false;
+        _error = error;
+      });
+    } else {
+      Navigator.popUntil(context, (route) => route.isFirst);
+      AuthService().signOut();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
@@ -263,10 +324,13 @@ class _ProfileViewState extends State<ProfileView> {
             SizedBox(height: 10),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: _createColumn(context, user, userData),
-              ),
+              child: _waitingForResponse
+                  ? Padding(
+                      padding: EdgeInsets.only(top: 100), child: Loading())
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: _createColumn(context, user, userData),
+                    ),
             ),
           ],
         ),

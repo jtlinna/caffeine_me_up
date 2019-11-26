@@ -25,8 +25,20 @@ exports.onUserAccountCreate = functions
     .auth
     .user()
     .onCreate(async (user) => {
+        let userAccount = null;
+        try {
+            userAccount = await admin.auth().getUser(user.uid);
+        } catch (e) {
+            // Assume account deleted
+            userAccount = null;
+        }
+
+        if (userAccount === null || userAccount === undefined) {
+            return null;
+        }
+
         const db = admin.firestore();
-        db.runTransaction(async (transaction) => {
+        await db.runTransaction(async (transaction) => {
                 try {
                     const documentRef = db.collection('users').doc(`${user.uid}`);
                     const snapshot = await transaction.get(documentRef);
@@ -41,15 +53,24 @@ exports.onUserAccountCreate = functions
                     return Promise.reject(e);
                 }
             })
-            .then((result) => {
+            .then((_) => {
                 console.log(`Finished User data verification for ${user.uid}`);
-                console.log(`${result}`);
                 return null;
             })
             .catch((error) => {
                 console.log(`Failed to verify User data when creating user ${user.uid} : ${error}`);
                 return null;
             });
+
+        return null;
+    });
+
+exports.onUserAccountDelete = functions
+    .region('europe-west2')
+    .auth
+    .user()
+    .onDelete(async (user) => {
+        return deleteUserData(user.uid);
     });
 
 exports.onUserDataWrite = functions
@@ -57,9 +78,9 @@ exports.onUserDataWrite = functions
     .firestore
     .document('/users/{userId}')
     .onWrite(async (change) => {
-        const newUserData = change.after.exists ? change.after.data() : null;
+        const newUserData = change.after.data();
 
-        if (!newUserData || nameValid(newUserData)) {
+        if (newUserData === undefined || nameValid(newUserData)) {
             return null;
         }
 
@@ -82,7 +103,12 @@ exports.onUserDataUpdate = functions
     .document('/users/{userId}')
     .onUpdate(async (change) => {
         const userData = change.after.data();
-        if (userData.groups === null) {
+        if (userData === null || userData === undefined) {
+            console.log('OnUserDataUpdate triggered for undefined');
+            return null;
+        }
+
+        if (userData.groups === null || userData.groups === undefined) {
             return null;
         }
 
@@ -100,7 +126,7 @@ exports.onUserDataUpdate = functions
                 const groupData = snapshot.data();
                 const updatedMembers = [];
 
-                if (groupData.members === null) {
+                if (groupData.members === null || groupData.members === undefined) {
                     console.warn(`Group ${snapshot.id} has null members`);
                 } else {
                     groupData.members.forEach(member => {
@@ -305,7 +331,7 @@ exports.inviteUser = functions
         if (email === null || groupId === null) {
             return {
                 status: -200
-            }
+            };
         }
         let user;
         try {
@@ -314,13 +340,13 @@ exports.inviteUser = functions
             // Assume user is not found
             return {
                 status: -1
-            }
+            };
         }
 
         if (user === null) {
             return {
                 status: -1
-            }
+            };
         }
 
         const db = admin.firestore();
@@ -329,7 +355,7 @@ exports.inviteUser = functions
         if (group === null) {
             return {
                 status: -200
-            }
+            };
         }
 
         const inviter = group.data().members.find((member) => {
@@ -340,13 +366,13 @@ exports.inviteUser = functions
             console.warn(`Couldn't find ${context.auth.uid} from group ${groupId} even though he's the inviter`);
             return {
                 status: -200
-            }
+            };
         }
 
         if (!userRolesWithInviteRights.some((role) => role === inviter.role)) {
             return {
                 status: -2
-            }
+            };
         }
 
         const existingMember = group.data().members.find((member) => {
@@ -356,10 +382,10 @@ exports.inviteUser = functions
         if (existingMember !== undefined) {
             return {
                 status: -3
-            }
+            };
         }
 
-        const userInvitations = await db.doc(`groupInvitations/${user.uid}`).get()
+        const userInvitations = await db.doc(`groupInvitations/${user.uid}`).get();
         console.log('User invitations');
         console.log(userInvitations.data());
 
@@ -368,7 +394,7 @@ exports.inviteUser = functions
             userInvitations.data().groupId !== undefined) {
             return {
                 status: -4
-            }
+            };
         }
 
         const invitationData = {};
@@ -379,7 +405,8 @@ exports.inviteUser = functions
 
         await userInvitations.ref.set(invitationData, {
             merge: true
-        })
+        });
+
         return {
             status: 0,
         };
@@ -406,7 +433,7 @@ exports.updateGroupData = functions
         if (group === null) {
             return {
                 status: -200
-            }
+            };
         }
 
         const author = group.data().members.find((member) => {
@@ -417,13 +444,13 @@ exports.updateGroupData = functions
             console.warn(`Couldn't find ${context.auth.uid} from group ${groupId} even though he's the author for group data update`);
             return {
                 status: -200
-            }
+            };
         }
 
         if (!userRolesWithManageRights.some((role) => role === author.role)) {
             return {
                 status: -1
-            }
+            };
         }
 
         if (data.groupName === null || data.groupName === undefined) {
@@ -473,9 +500,98 @@ exports.updateGroupData = functions
         };
     });
 
+// 0 Ok
+// -1 Active owner of group(s)
+// -200 Invalid request / internal error
+exports.deleteUser = functions
+    .region('europe-west2')
+    .https
+    .onCall(async (data, context) => {
+
+        if (context.auth === null || context.auth === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        const db = admin.firestore();
+
+        const snapshot = await db.doc(`users/${context.auth.uid}`).get();
+        if (snapshot === null || snapshot === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        const user = snapshot.data();
+
+        if (user === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        if (user.groups !== null && user.groups !== undefined && user.groups.some((group) => group.role === userRoleOwner)) {
+            return {
+                status: -1
+            };
+        }
+
+        await Promise.all([
+            admin.auth().deleteUser(context.auth.uid),
+            deleteUserData(context.auth.uid)
+        ]);
+
+        return {
+            status: 0
+        }
+    });
+
 function nameValid(userData) {
     return userData.displayName !== null &&
         userData.displayName.length >= minLength &&
         userData.displayName.length <= maxLength &&
         userData.displayName === badwordsFilter.clean(userData.displayName);
+}
+
+async function deleteUserData(uid) {
+    const db = admin.firestore();
+    const userSnapshot = await db.doc(`users/${uid}`).get();
+
+    const userData = userSnapshot.data();
+    if (userData === undefined) {
+        return Promise.resolve('Already deleted');
+    }
+
+    if (userData.groups === null || userData.groups === undefined) {
+        return userSnapshot.ref.delete();
+    }
+
+    const groupGetRequests = [];
+    userData.groups.forEach((group) => {
+        groupGetRequests.push(db.doc(`groups/${group.id}`).get());
+    });
+
+    const groupSnapshots = await Promise.all(groupGetRequests);
+
+    const writeRequests = [
+        db.doc(`groupInvitations/${uid}`).delete()
+    ];
+
+    groupSnapshots.forEach((snapshot) => {
+        const group = snapshot.data();
+        const updatedMembers = [];
+        group.members.forEach((member) => {
+            if (member.userId !== uid) {
+                updatedMembers.push(member);
+            }
+
+            group.members = updatedMembers;
+            writeRequests.push(snapshot.ref.update(group));
+        });
+    });
+
+    writeRequests.push(userSnapshot.ref.delete());
+
+    return Promise.all(writeRequests);
 }

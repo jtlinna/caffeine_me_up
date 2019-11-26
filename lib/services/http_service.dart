@@ -14,6 +14,9 @@ class HttpService {
       CloudFunctions(region: 'europe-west2')
           .getHttpsCallable(functionName: 'updateGroupData');
 
+  final HttpsCallable _deleteUserHandle = CloudFunctions(region: 'europe-west2')
+      .getHttpsCallable(functionName: 'deleteUser');
+
   Future<ErrorMessage> createGroup({String groupName, bool isPrivate}) async {
     try {
       HttpsCallableResult result = await _createGroupHandle
@@ -77,9 +80,9 @@ class HttpService {
   Future<ErrorMessage> updateGroupData(
       {@required String groupId, String groupName}) async {
     try {
-      HttpsCallableResult result =
-          await _updateGroupDataHandle.call({'groupId': groupId, 'groupName': groupName});
-      print('inviteUser: Got result : ${result.data}');
+      HttpsCallableResult result = await _updateGroupDataHandle
+          .call({'groupId': groupId, 'groupName': groupName});
+      print('updateGroupData: Got result : ${result.data}');
       switch (result.data['status']) {
         case 0:
           return null;
@@ -94,6 +97,30 @@ class HttpService {
       return new ErrorMessage(message: 'Something went wrong');
     } catch (e) {
       print('updateGroupData: Got error: $e');
+      return new ErrorMessage(message: 'Something went wrong');
+    }
+  }
+
+  Future<ErrorMessage> deleteUser() async{
+    
+    try {
+      HttpsCallableResult result = await _deleteUserHandle
+          .call();
+      print('deleteUser: Got result : ${result.data}');
+      switch (result.data['status']) {
+        case 0:
+          return null;
+        case -1:
+          return new ErrorMessage(message: 'Cannot delete account while owner of one or more groups');
+        default:
+          return new ErrorMessage(message: 'Something went wrong');
+      }
+    } on CloudFunctionsException catch (e) {
+      print(
+          'deleteUser: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+      return new ErrorMessage(message: 'Something went wrong');
+    } catch (e) {
+      print('deleteUser: Got error: $e');
       return new ErrorMessage(message: 'Something went wrong');
     }
   }
