@@ -17,10 +17,10 @@ class HttpService {
   final HttpsCallable _deleteUserHandle = CloudFunctions(region: 'europe-west2')
       .getHttpsCallable(functionName: 'deleteUser');
 
-  Future<ErrorMessage> createGroup({String groupName, bool isPrivate}) async {
+  Future<ErrorMessage> createGroup({String groupName}) async {
     try {
       HttpsCallableResult result = await _createGroupHandle
-          .call({'groupName': groupName, 'isPrivate': isPrivate});
+          .call({'groupName': groupName});
       print('createGroup: Got result : ${result.data}');
       switch (result.data['status']) {
         case 0:

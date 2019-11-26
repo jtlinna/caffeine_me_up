@@ -21,7 +21,6 @@ class _CreateGroupViewState extends State<CreateGroupView> {
   final HttpService _httpService = HttpService();
 
   String _groupName = '';
-  bool _isPrivate = false;
   ErrorMessage _error;
   bool _creatingGroup = false;
 
@@ -34,8 +33,7 @@ class _CreateGroupViewState extends State<CreateGroupView> {
       _creatingGroup = true;
     });
 
-    ErrorMessage resp = await _httpService.createGroup(
-        groupName: _groupName, isPrivate: _isPrivate);
+    ErrorMessage resp = await _httpService.createGroup(groupName: _groupName);
     if (resp == null) {
       widget.openMyGroupsCallback();
       return;
@@ -87,20 +85,6 @@ class _CreateGroupViewState extends State<CreateGroupView> {
                         setState(() => _groupName = value);
                       },
                     ),
-                  ),
-                  SizedBox(
-                    height: 25,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text('Private'),
-                      Switch(
-                        value: _isPrivate,
-                        onChanged: (value) =>
-                            setState(() => _isPrivate = value),
-                      ),
-                    ],
                   ),
                   SizedBox(height: 10),
                   RaisedButton(

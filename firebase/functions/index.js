@@ -254,7 +254,6 @@ exports.createGroup =
         }
 
         const groupName = data.groupName;
-        const isPrivate = data.isPrivate;
 
         if (groupName !== badwordsFilter.clean(groupName)) {
             return {
@@ -282,7 +281,6 @@ exports.createGroup =
 
         const newGroup = {
             groupName: groupName,
-            isPrivate: isPrivate,
             members: [{
                 role: userRoleOwner,
                 userId: authData.uid,

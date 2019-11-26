@@ -91,7 +91,6 @@ class DatabaseService {
         ? new GroupData(
             groupId: snapshot.documentID,
             groupName: snapshot.data['groupName'] ?? '',
-            isPrivate: snapshot.data['isPrivate'] ?? false,
             members: _mapGroupMembers(snapshot))
         : null;
   }

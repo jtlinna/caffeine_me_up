@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 class GroupData {
   String groupId;
   String groupName;
-  bool isPrivate;
   List<GroupMemberData> members;
 
   GroupData(
-      {@required this.groupId, this.groupName, this.isPrivate, this.members});
+      {@required this.groupId, this.groupName, this.members});
   @override
   String toString() =>
-      'GroupData $groupId -- Group name $groupName -- Is private $isPrivate -- Members $members';
+      'GroupData $groupId -- Group name $groupName --  Members $members';
 }
