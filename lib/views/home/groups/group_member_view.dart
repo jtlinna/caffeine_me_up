@@ -14,7 +14,7 @@ class GroupMemberView extends StatefulWidget {
 class _GroupMemberViewState extends State<GroupMemberView> {
   final _tabs = [
     BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Profile')),
-    BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Stats'))
+    BottomNavigationBarItem(icon: Icon(Icons.show_chart), title: Text('Stats'))
   ];
 
   final _tabOptions = [GroupMemberProfileView(), GroupMemberStatsView()];
