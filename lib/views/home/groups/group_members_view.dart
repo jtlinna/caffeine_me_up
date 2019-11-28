@@ -7,7 +7,6 @@ class GroupMembersView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     GroupData group = Provider.of<GroupData>(context);
-    print(group);
     return Container(
         color: Theme.of(context).backgroundColor,
         child: ListView.builder(
@@ -15,9 +14,7 @@ class GroupMembersView extends StatelessWidget {
           itemBuilder: (context, index) {
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
-              child: GroupMemberCard(
-                groupMember: group.members[index],
-              ),
+              child: GroupMemberCard(groupMember: group.members[index]),
             );
           },
         ));

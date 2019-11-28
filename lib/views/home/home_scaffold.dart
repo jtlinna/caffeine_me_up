@@ -1,3 +1,4 @@
+import 'package:cafeine_me_up/models/user.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/auth_service.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
@@ -17,18 +18,18 @@ class HomeScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final UserData userData = Provider.of<UserData>(context);
+    final User user = Provider.of<User>(context);
     void _showProfile() {
       _auth.refreshCurrentUser();
       showModalBottomSheet(
           context: context,
           isScrollControlled: true,
           builder: (context) => StreamProvider<UserData>.value(
-              value: DatabaseService().userData(userData.uid),
+              value: DatabaseService().userData(user.uid),
               child: ProfileView()));
     }
 
-    return userData == null
+    return user == null
         ? Loading()
         : Scaffold(
             appBar: AppBar(title: Text(title), actions: <Widget>[

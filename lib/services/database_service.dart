@@ -63,6 +63,7 @@ class DatabaseService {
           userData: new UserData(
               uid: member['userId'],
               displayName: userData['displayName'] ?? '',
+              avatar: userData['avatar'] ?? '',
               consumedDrinks: _mapConsumedDrinks(userData['consumedDrinks']),
               lastConsumedDrink:
                   DrinkData.fromMap(userData['lastConsumedDrink']),
