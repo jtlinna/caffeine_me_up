@@ -14,7 +14,7 @@ class StorageService {
     try {
       StorageUploadTask task = _firebaseStorage
           .ref()
-          .child('avatars/${uid}/avatar.png')
+          .child('avatars/$uid/avatar.png')
           .putFile(avatar);
       StorageTaskSnapshot snapshot = await task.onComplete;
       String downloadUrl = await snapshot.ref.getDownloadURL();
