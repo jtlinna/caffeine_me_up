@@ -77,6 +77,7 @@ class DatabaseService {
         ? new UserData(
             uid: snapshot.documentID,
             displayName: snapshot.data['displayName'] ?? '',
+            avatar: snapshot.data['avatar'] ?? '',
             consumedDrinks: _mapConsumedDrinks(snapshot.data['consumedDrinks']),
             lastConsumedDrink:
                 DrinkData.fromMap(snapshot.data['lastConsumedDrink']),
@@ -115,6 +116,7 @@ class DatabaseService {
 
   Map<String, dynamic> _createUserMap(
       {String displayName,
+      String avatar,
       List<DrinkData> consumedDrinks,
       DrinkData lastConsumedDrink,
       Map<int, int> lifetimeConsumptions,
@@ -122,6 +124,10 @@ class DatabaseService {
     Map<String, dynamic> data = new Map();
     if (displayName != null) {
       data['displayName'] = displayName;
+    }
+
+    if(avatar != null) {
+      data['avatar'] = avatar;
     }
 
     if (consumedDrinks != null) {
@@ -165,11 +171,13 @@ class DatabaseService {
 
   Future<DatabaseResponse> updateUserData(String uid,
       {String displayName,
+      String avatar,
       List<DrinkData> consumedDrinks,
       DrinkData lastConsumedDrink,
       Map<int, int> lifetimeConsumptions}) async {
     Map<String, dynamic> data = _createUserMap(
         displayName: displayName,
+        avatar: avatar,
         consumedDrinks: consumedDrinks,
         lastConsumedDrink: lastConsumedDrink,
         lifetimeConsumptions: lifetimeConsumptions);

@@ -1,13 +1,19 @@
+import 'dart:io';
+
 import 'package:cafeine_me_up/models/auth_response.dart';
+import 'package:cafeine_me_up/models/database_response.dart';
 import 'package:cafeine_me_up/models/error_message.dart';
+import 'package:cafeine_me_up/models/storage_response.dart';
 import 'package:cafeine_me_up/models/user.dart';
 import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/services/auth_service.dart';
 import 'package:cafeine_me_up/services/database_service.dart';
 import 'package:cafeine_me_up/services/http_service.dart';
+import 'package:cafeine_me_up/services/storage_service.dart';
 import 'package:cafeine_me_up/utils/validators.dart';
 import 'package:cafeine_me_up/views/loading.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class ProfileView extends StatefulWidget {
@@ -19,6 +25,7 @@ class _ProfileViewState extends State<ProfileView> {
   final DatabaseService _databaseService = DatabaseService();
   final AuthService _auth = AuthService();
   final HttpService _httpService = HttpService();
+  final StorageService _storageService = StorageService();
 
   final _editKey = GlobalKey<FormState>();
 
@@ -28,6 +35,8 @@ class _ProfileViewState extends State<ProfileView> {
 
   String _newDisplayName = '';
   String _newEmail = '';
+
+  File _newAvatar;
 
   ErrorMessage _error;
 
@@ -40,6 +49,7 @@ class _ProfileViewState extends State<ProfileView> {
     }
 
     final TextTheme textTheme = Theme.of(context).textTheme;
+
 
     if (_editingName) {
       widgets.add(Form(
@@ -76,17 +86,79 @@ class _ProfileViewState extends State<ProfileView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            'Display name: ${userData.displayName}',
-            style: textTheme.display2,
+            '${userData.displayName}',
+            style: textTheme.headline,
           ),
           FlatButton.icon(
             icon: Icon(Icons.edit),
-            label: Text('Edit'),
+            label: Text('Edit', style: textTheme.display2),
             onPressed: _editName,
             textColor: textTheme.display2.color,
           )
         ],
       ));
+    }
+
+    widgets.add(SizedBox(height: 35));
+
+    ImageProvider imgProvider;
+    if (_newAvatar != null) {
+      imgProvider = FileImage(_newAvatar);
+    } else if (userData.avatar != '') {
+      imgProvider = NetworkImage(userData.avatar);
+    } else {
+      imgProvider = AssetImage('images/generic_avatar.png');
+    }
+
+    widgets.add(CircleAvatar(
+        radius: 96,
+        backgroundColor: Theme.of(context).accentColor,
+        backgroundImage: imgProvider));
+
+    if (_newAvatar != null) {
+      widgets.add(
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        FlatButton.icon(
+            icon: Icon(Icons.cancel),
+            label: Text("Cancel"),
+            textColor: textTheme.display2.color,
+            onPressed: () {
+              setState(() {
+                _newAvatar = null;
+              });
+            }),
+        FlatButton.icon(
+            icon: Icon(Icons.done),
+            label: Text("Confirm"),
+            textColor: textTheme.display2.color,
+            onPressed: () {
+              _confirmNewAvatar(userData.uid);
+            })
+      ]));
+    } else {
+      widgets.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            FlatButton.icon(
+              icon: Icon(
+                Icons.delete,
+              ),
+              label: Text('Remove'),
+              textColor: textTheme.display2.color,
+              onPressed: () => _showConfirmRemoveAvatarDialog(user.uid),
+            ),
+            FlatButton.icon(
+              icon: Icon(
+                Icons.camera_alt,
+              ),
+              label: Text('Change'),
+              textColor: textTheme.display2.color,
+              onPressed: _showSelectAvatarSourceDialog,
+            ),
+          ],
+        ),
+      );
     }
 
     if (_editingEmail) {
@@ -191,6 +263,113 @@ class _ProfileViewState extends State<ProfileView> {
     return widgets;
   }
 
+  void _showSelectAvatarSourceDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: Text("Select source"),
+            content: Text(
+                "Do you want to select image from Gallery or take a new image with Camera?"),
+            actions: <Widget>[
+              FlatButton(
+                  child: Text("Cancel"),
+                  onPressed: () => Navigator.pop(dialogContext)),
+              FlatButton(
+                  child: Text("Camera"),
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    _selectNewAvatar(ImageSource.camera);
+                  }),
+              FlatButton(
+                child: Text("Gallery"),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _selectNewAvatar(ImageSource.gallery);
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  void _selectNewAvatar(ImageSource source) async {
+    File img = await ImagePicker.pickImage(
+        source: source, maxWidth: 256, maxHeight: 256);
+    if (img != null) {
+      setState(() {
+        _newAvatar = img;
+      });
+    }
+  }
+
+  void _confirmNewAvatar(String uid) async {
+    setState(() {
+      _error = null;
+      _waitingForResponse = true;
+    });
+
+    StorageResponse storageResp =
+        await _storageService.uploadAvatar(uid: uid, avatar: _newAvatar);
+    if (storageResp.errorMessage != null) {
+      setState(() {
+        _newAvatar = null;
+        _error = storageResp.errorMessage;
+        _waitingForResponse = false;
+      });
+
+      return;
+    }
+
+    DatabaseResponse dbResp = await _databaseService.updateUserData(uid,
+        avatar: storageResp.downloadUrl);
+    setState(() {
+      _newAvatar = null;
+      _waitingForResponse = false;
+      _error = dbResp.errorMessage;
+    });
+  }
+
+  void _showConfirmRemoveAvatarDialog(String uid) {
+    showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: Text("Remove Avatar"),
+            content: Text(
+                "Do you want to remove your current Avatar? This action cannot be undone"),
+            actions: <Widget>[
+              FlatButton(
+                  child: Text("Cancel"),
+                  onPressed: () => Navigator.pop(dialogContext)),
+              FlatButton(
+                child: Text("Confirm"),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _removeAvatar(uid);
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  void _removeAvatar(String uid) async {
+    setState(() {
+      _waitingForResponse = true;
+      _error = null;
+      _newAvatar = null;
+    });
+
+    DatabaseResponse resp =
+        await _databaseService.updateUserData(uid, avatar: '');
+
+    setState(() {
+      _waitingForResponse = false;
+      _error = resp.errorMessage;
+    });
+  }
+
   void _editName() {
     setState(() {
       _error = null;
@@ -260,14 +439,14 @@ class _ProfileViewState extends State<ProfileView> {
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: new Text("Delete account"),
-            content: new Text("Are you sure you want to delete your account?"),
+            title: Text("Delete account"),
+            content: Text("Are you sure you want to delete your account?"),
             actions: <Widget>[
-              new FlatButton(
-                  child: new Text("Cancel"),
+              FlatButton(
+                  child: Text("Cancel"),
                   onPressed: () => Navigator.pop(dialogContext)),
-              new FlatButton(
-                child: new Text("Delete"),
+              FlatButton(
+                child: Text("Delete"),
                 onPressed: () {
                   Navigator.pop(dialogContext);
                   _confirmDeleteAccount(context);
@@ -323,7 +502,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             SizedBox(height: 10),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 30),
               child: _waitingForResponse
                   ? Padding(
                       padding: EdgeInsets.only(top: 100), child: Loading())
