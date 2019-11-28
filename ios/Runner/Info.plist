@@ -41,5 +41,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow access to the Photo Library to upload a Profile Avatar?</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow access to the Camera to create and upload a Profile Avatar?</string>
 </dict>
 </plist>
