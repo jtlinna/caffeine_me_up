@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:140671194844:android:ccd8fe1371301b33d74619",
+        "mobilesdk_app_id": "1:140671194844:android:80932dd0660d390fd74619",
         "android_client_info": {
-          "package_name": "com.tiberon.drinks_on_me.dev"
+          "package_name": "tech.tiberon.drinks_on_me.dev"
         }
       },
       "oauth_client": [
@@ -30,6 +30,13 @@
             {
               "client_id": "140671194844-gecsv8rdppi89181i7r6mp553pmeisc3.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "140671194844-858g8vs6t9mke7slf8huf2cti0l400c9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "tech.tiberon.drinks-on-me.dev"
+              }
             }
           ]
         }
