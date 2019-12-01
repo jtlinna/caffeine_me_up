@@ -17,10 +17,14 @@ class HttpService {
   final HttpsCallable _deleteUserHandle = CloudFunctions(region: 'europe-west2')
       .getHttpsCallable(functionName: 'deleteUser');
 
+  final HttpsCallable _updateGroupMemberRoleHandle =
+      CloudFunctions(region: 'europe-west2')
+          .getHttpsCallable(functionName: 'updateGroupMemberRole');
+
   Future<ErrorMessage> createGroup({String groupName}) async {
     try {
-      HttpsCallableResult result = await _createGroupHandle
-          .call({'groupName': groupName});
+      HttpsCallableResult result =
+          await _createGroupHandle.call({'groupName': groupName});
       print('createGroup: Got result : ${result.data}');
       switch (result.data['status']) {
         case 0:
@@ -101,17 +105,39 @@ class HttpService {
     }
   }
 
-  Future<ErrorMessage> deleteUser() async{
-    
+  Future<ErrorMessage> updateGroupMemberRole(
+      {String groupId, String groupMemberId, int role}) async {
     try {
-      HttpsCallableResult result = await _deleteUserHandle
-          .call();
+      HttpsCallableResult result = await _updateGroupMemberRoleHandle.call(
+          {'groupId': groupId, 'groupMemberId': groupMemberId, 'role': role});
+      print('updateGroupMemberRole: Got result : ${result.data}');
+      switch (result.data['status']) {
+        case 0:
+          return null;
+        default:
+          return new ErrorMessage(message: 'Something went wrong');
+      }
+    } on CloudFunctionsException catch (e) {
+      print(
+          'deleteUser: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+      return new ErrorMessage(message: 'Something went wrong');
+    } catch (e) {
+      print('deleteUser: Got error: $e');
+      return new ErrorMessage(message: 'Something went wrong');
+    }
+  }
+
+  Future<ErrorMessage> deleteUser() async {
+    try {
+      HttpsCallableResult result = await _deleteUserHandle.call();
       print('deleteUser: Got result : ${result.data}');
       switch (result.data['status']) {
         case 0:
           return null;
         case -1:
-          return new ErrorMessage(message: 'Cannot delete account while owner of one or more groups');
+          return new ErrorMessage(
+              message:
+                  'Cannot delete account while owner of one or more groups');
         default:
           return new ErrorMessage(message: 'Something went wrong');
       }

@@ -59,6 +59,7 @@ class DatabaseService {
       Map<dynamic, dynamic> userData = member['userData'];
 
       return new GroupMemberData(
+          groupId: snapshot.documentID,
           role: member['role'],
           userData: new UserData(
               uid: member['userId'],

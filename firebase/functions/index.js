@@ -499,6 +499,103 @@ exports.updateGroupData = functions
     });
 
 // 0 Ok
+// -1 Invalid group ID
+// -2 Invalid group member ID
+// -3 Invalid new role
+// -4 Only owners are allowed to change group member roles
+// -200 Invalid request / internal error
+exports.updateGroupMemberRole = functions
+    .region('europe-west2')
+    .https
+    .onCall(async (data, context) => {
+        if (context.auth === null || context.auth === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        const groupId = data.groupId;
+        const groupMemberId = data.groupMemberId;
+        const newRole = data.role;
+
+        if (groupId === null || groupId === undefined) {
+            return {
+                status: -1
+            };
+        }
+
+        if (groupMemberId === null || groupMemberId === undefined) {
+            return {
+                status: -2
+            };
+        }
+
+        if (newRole === null || newRole === undefined || newRole === userRoleOwner) {
+            return {
+                status: -3
+            };
+        }
+
+        const db = admin.firestore();
+
+        const snapshots = await Promise.all([
+            db.doc(`/groups/${groupId}`).get(),
+            db.doc(`/users/${groupMemberId}`).get()
+        ]);
+
+        const groupData = snapshots[0].data();
+        const userData = snapshots[1].data();
+        if (!groupData === undefined) {
+            return {
+                status: -1
+            };
+        }
+
+        if (userData === undefined) {
+            return {
+                status: -2
+            };
+        }
+
+        if (!groupData.members.some((member) => {
+                return member.userId === context.auth.uid && userRolesWithManageRights.some((role) => {
+                    return role === member.role
+                })
+            })) {
+            return {
+                status: -4
+            };
+        }
+
+        const groupMemberIdx = groupData.members.findIndex((member) => member.userId === groupMemberId);
+
+        if (groupMemberIdx === -1) {
+            return {
+                status: -2
+            };
+        }
+
+        const userDataGroupIdx = userData.groups.findIndex((group) => group.id === groupId);
+        if (userDataGroupIdx === -1) {
+            return {
+                status: -200
+            };
+        }
+
+        groupData.members[groupMemberIdx].role = newRole;
+        userData.groups[userDataGroupIdx].role = newRole;
+
+        await Promise.all([
+            snapshots[0].ref.update(groupData),
+            snapshots[1].ref.update(userData)
+        ]);
+
+        return {
+            status: 0
+        };
+    })
+
+// 0 Ok
 // -1 Active owner of group(s)
 // -200 Invalid request / internal error
 exports.deleteUser = functions

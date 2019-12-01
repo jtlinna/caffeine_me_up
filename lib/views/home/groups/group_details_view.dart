@@ -4,6 +4,7 @@ import 'package:cafeine_me_up/models/user_data.dart';
 import 'package:cafeine_me_up/views/home/groups/group_members_view.dart';
 import 'package:cafeine_me_up/views/home/groups/group_stats_view.dart';
 import 'package:cafeine_me_up/views/home/groups/invite_user_view.dart';
+import 'package:cafeine_me_up/views/home/groups/manage_group_members_view.dart';
 import 'package:cafeine_me_up/views/home/groups/manage_group_view.dart';
 import 'package:cafeine_me_up/views/home/home_scaffold.dart';
 import 'package:cafeine_me_up/views/loading.dart';
@@ -40,21 +41,25 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
     List<Widget> tabOptions = [GroupMembersView(), GroupStatsView()];
 
     List<BottomNavigationBarItem> tabs = [
-      BottomNavigationBarItem(icon: Icon(Icons.group), title: Text('Members')),
+      BottomNavigationBarItem(icon: Icon(Icons.group), title: Text('Group\nMembers', textAlign: TextAlign.center,)),
       BottomNavigationBarItem(
-          icon: Icon(Icons.show_chart), title: Text('Stats'))
+          icon: Icon(Icons.show_chart), title: Text('Group\nStats', textAlign: TextAlign.center))
     ];
 
     if (isOwner || isAdmin) {
       tabOptions.add(InviteUserView());
       tabs.add(BottomNavigationBarItem(
-          icon: Icon(Icons.group_add), title: Text('Invite')));
+          icon: Icon(Icons.group_add), title: Text('Invite\nMembers', textAlign: TextAlign.center)));
     }
 
     if (isOwner) {
-      tabOptions.add(ManageGroupView());
-      tabs.add(BottomNavigationBarItem(
-          icon: Icon(Icons.settings), title: Text('Manage')));
+      tabOptions.addAll([ManageGroupView(), ManageGroupMembersView()]);
+      tabs.addAll([
+        BottomNavigationBarItem(
+            icon: Icon(Icons.settings), title: Text('Manage\nGroup', textAlign: TextAlign.center)),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.settings), title: Text('Manage\nMembers', textAlign: TextAlign.center))
+      ]);
     }
 
     return HomeScaffold(
