@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-firebase deploy --only functions:updateGroupMemberRole
+firebase deploy --only functions:transferGroupOwnership

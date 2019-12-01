@@ -19,14 +19,19 @@ class GroupDetailsView extends StatefulWidget {
 class _GroupDetailsViewState extends State<GroupDetailsView> {
   int _currentTab = 0;
 
+  void _openDefaultTab() {
+    setState(() {
+      _currentTab = 0;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     GroupData groupData = Provider.of<GroupData>(context);
-    if (groupData == null) {
+    UserData userData = Provider.of<UserData>(context);
+    if (groupData == null || userData == null) {
       return new HomeScaffold(title: '', body: Loading());
     }
 
-    UserData userData = Provider.of<UserData>(context);
     int groupIdx =
         userData.groups.indexWhere((group) => group.id == groupData.groupId);
 
@@ -53,7 +58,7 @@ class _GroupDetailsViewState extends State<GroupDetailsView> {
     }
 
     if (isOwner) {
-      tabOptions.addAll([ManageGroupView(), ManageGroupMembersView()]);
+      tabOptions.addAll([ManageGroupView(openDefaultTabCallback: _openDefaultTab), ManageGroupMembersView()]);
       tabs.addAll([
         BottomNavigationBarItem(
             icon: Icon(Icons.settings), title: Text('Manage\nGroup', textAlign: TextAlign.center)),

@@ -502,7 +502,7 @@ exports.updateGroupData = functions
 // -1 Invalid group ID
 // -2 Invalid group member ID
 // -3 Invalid new role
-// -4 Only owners are allowed to change group member roles
+// -4 Only members with manage rights are allowed to change group member roles
 // -200 Invalid request / internal error
 exports.updateGroupMemberRole = functions
     .region('europe-west2')
@@ -594,6 +594,143 @@ exports.updateGroupMemberRole = functions
             status: 0
         };
     })
+
+// 0 Ok
+// -1 Invalid group ID
+// -2 Invalid group member ID
+// -3 New owner must have a verified e-mail
+// -4 Only owner is allowed to transfer ownership
+exports.transferGroupOwnership = functions
+    .region('europe-west2')
+    .https
+    .onCall(async (data, context) => {
+        if (context.auth === null || context.auth === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        const groupId = data.groupId;
+        const groupMemberId = data.groupMemberId;
+
+        if (groupId === null || groupId === undefined) {
+            return {
+                status: -1
+            };
+        }
+
+        if (groupMemberId === null || groupMemberId === undefined) {
+            return {
+                status: -2
+            };
+        }
+
+        const auth = admin.auth();
+        let userAccount = null;
+        try {
+            userAccount = await auth.getUser(groupMemberId);
+        } catch (e) {
+            userAccount = null;
+        }
+
+        if (userAccount === null || userAccount === undefined || !userAccount.emailVerified) {
+            console.log('Failed to transfer group ownership');
+            console.log(userAccount);
+            return {
+                status: -3
+            };
+        }
+
+        const db = admin.firestore();
+
+        const snapshots = await Promise.all([
+            db.doc(`/groups/${groupId}`).get(),
+            db.doc(`/users/${groupMemberId}`).get(),
+            db.doc(`/users/${context.auth.uid}`).get()
+        ]);
+
+        const groupData = snapshots[0].data();
+        const groupMemberData = snapshots[1].data();
+        const ownerData = snapshots[2].data();
+
+        if (groupData === undefined) {
+            return {
+                status: -1
+            };
+        }
+
+        if (groupMemberData === undefined) {
+            return {
+                status: -2
+            };
+        }
+
+        if (ownerData === undefined) {
+            return {
+                status: -200
+            };
+        }
+
+        if (!groupData.members.some((member) => {
+                return member.userId === context.auth.uid && member.role === userRoleOwner;
+            })) {
+            return {
+                status: -4
+            };
+        }
+
+
+        const groupMemberIdx = groupData.members.findIndex((member) => member.userId === groupMemberId);
+
+        if (groupMemberIdx === -1) {
+            return {
+                status: -2
+            };
+        }
+
+        const ownerMemberIdx = groupData.members.findIndex((member) => member.userId === context.auth.uid);
+
+        if (ownerMemberIdx === -1) {
+            return {
+                status: -200
+            };
+        }
+
+        const groupMemberDataGroupIdx = groupMemberData.groups.findIndex((group) => group.id === groupId);
+        if (groupMemberDataGroupIdx === -1) {
+            return {
+                status: -200
+            };
+        }
+
+        const ownerGroupIdx = ownerData.groups.findIndex((group) => group.id === groupId);
+        if (ownerGroupIdx === -1) {
+            return {
+                status: -200
+            };
+        }
+
+        groupData.members[groupMemberIdx].role = userRoleOwner;
+        groupData.members[ownerMemberIdx].role = userRoleMember;
+
+        groupMemberData.groups[groupMemberDataGroupIdx].role = userRoleOwner;
+
+        ownerData.groups[ownerGroupIdx].role = userRoleMember;
+
+        // Update the group's data first to make sure
+        // that the member list is up-to-date even if
+        // user data updates try to modify it simultaneously
+        await snapshots[0].ref.update(groupData);
+
+        await Promise.all([
+            snapshots[1].ref.update(groupMemberData),
+            snapshots[2].ref.update(ownerData)
+        ]);
+
+        return {
+            status: 0
+        };
+    });
 
 // 0 Ok
 // -1 Active owner of group(s)

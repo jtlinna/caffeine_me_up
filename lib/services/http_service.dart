@@ -21,6 +21,10 @@ class HttpService {
       CloudFunctions(region: 'europe-west2')
           .getHttpsCallable(functionName: 'updateGroupMemberRole');
 
+  final HttpsCallable _transferGroupOwnershipHandle =
+      CloudFunctions(region: 'europe-west2')
+          .getHttpsCallable(functionName: 'transferGroupOwnership');
+
   Future<ErrorMessage> createGroup({String groupName}) async {
     try {
       HttpsCallableResult result =
@@ -110,7 +114,7 @@ class HttpService {
     try {
       HttpsCallableResult result = await _updateGroupMemberRoleHandle.call(
           {'groupId': groupId, 'groupMemberId': groupMemberId, 'role': role});
-      print('updateGroupMemberRole: Got result : ${result.data}');
+      print('updateGroupData: Got result : ${result.data}');
       switch (result.data['status']) {
         case 0:
           return null;
@@ -119,10 +123,36 @@ class HttpService {
       }
     } on CloudFunctionsException catch (e) {
       print(
-          'deleteUser: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+          'updateGroupData: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
       return new ErrorMessage(message: 'Something went wrong');
     } catch (e) {
-      print('deleteUser: Got error: $e');
+      print('updateGroupData: Got error: $e');
+      return new ErrorMessage(message: 'Something went wrong');
+    }
+  }
+
+  Future<ErrorMessage> transferGroupOwnership(
+      {String groupId, String groupMemberId, String groupMemberName}) async {
+    try {
+      HttpsCallableResult result = await _transferGroupOwnershipHandle
+          .call({'groupId': groupId, 'groupMemberId': groupMemberId});
+      print('transferGroupOwnership: Got result : ${result.data}');
+      switch (result.data['status']) {
+        case 0:
+          return null;
+        case -3:
+          return new ErrorMessage(
+              message:
+                  '$groupMemberName\'s account needs to be verified before they are allowed to become a group owner');
+        default:
+          return new ErrorMessage(message: 'Something went wrong');
+      }
+    } on CloudFunctionsException catch (e) {
+      print(
+          'transferGroupOwnership: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+      return new ErrorMessage(message: 'Something went wrong');
+    } catch (e) {
+      print('transferGroupOwnership: Got error: $e');
       return new ErrorMessage(message: 'Something went wrong');
     }
   }

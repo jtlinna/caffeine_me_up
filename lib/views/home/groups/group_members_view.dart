@@ -14,7 +14,10 @@ class GroupMembersView extends StatelessWidget {
           itemBuilder: (context, index) {
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
-              child: GroupMemberCard(groupMember: group.members[index], managingMember: false,),
+              child: GroupMemberCard(
+                groupMember: group.members[index],
+                managingMember: false,
+              ),
             );
           },
         ));
