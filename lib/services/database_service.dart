@@ -60,6 +60,7 @@ class DatabaseService {
 
       return new GroupMemberData(
           groupId: snapshot.documentID,
+          groupName: snapshot.data['groupName'] ?? '',
           role: member['role'],
           userData: new UserData(
               uid: member['userId'],

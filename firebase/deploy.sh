@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-firebase deploy --only functions:transferGroupOwnership
+firebase deploy --only functions:removeGroupMember

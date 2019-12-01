@@ -25,6 +25,10 @@ class HttpService {
       CloudFunctions(region: 'europe-west2')
           .getHttpsCallable(functionName: 'transferGroupOwnership');
 
+  final HttpsCallable _removeGroupMemberHandle =
+      CloudFunctions(region: 'europe-west2')
+          .getHttpsCallable(functionName: 'removeGroupMember');
+
   Future<ErrorMessage> createGroup({String groupName}) async {
     try {
       HttpsCallableResult result =
@@ -114,7 +118,7 @@ class HttpService {
     try {
       HttpsCallableResult result = await _updateGroupMemberRoleHandle.call(
           {'groupId': groupId, 'groupMemberId': groupMemberId, 'role': role});
-      print('updateGroupData: Got result : ${result.data}');
+      print('updateGroupMemberRole: Got result : ${result.data}');
       switch (result.data['status']) {
         case 0:
           return null;
@@ -123,10 +127,10 @@ class HttpService {
       }
     } on CloudFunctionsException catch (e) {
       print(
-          'updateGroupData: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+          'updateGroupMemberRole: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
       return new ErrorMessage(message: 'Something went wrong');
     } catch (e) {
-      print('updateGroupData: Got error: $e');
+      print('updateGroupMemberRole: Got error: $e');
       return new ErrorMessage(message: 'Something went wrong');
     }
   }
@@ -153,6 +157,28 @@ class HttpService {
       return new ErrorMessage(message: 'Something went wrong');
     } catch (e) {
       print('transferGroupOwnership: Got error: $e');
+      return new ErrorMessage(message: 'Something went wrong');
+    }
+  }
+
+  Future<ErrorMessage> removeGroupMember(
+      {String groupId, String groupMemberId}) async {
+    try {
+      HttpsCallableResult result = await _removeGroupMemberHandle.call(
+          {'groupId': groupId, 'groupMemberId': groupMemberId});
+      print('removeGroupMember: Got result : ${result.data}');
+      switch (result.data['status']) {
+        case 0:
+          return null;
+        default:
+          return new ErrorMessage(message: 'Something went wrong');
+      }
+    } on CloudFunctionsException catch (e) {
+      print(
+          'removeGroupMember: Got error: Code ${e.code} -- Msg ${e.message} -- Details ${e.details}');
+      return new ErrorMessage(message: 'Something went wrong');
+    } catch (e) {
+      print('removeGroupMember: Got error: $e');
       return new ErrorMessage(message: 'Something went wrong');
     }
   }

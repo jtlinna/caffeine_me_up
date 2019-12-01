@@ -54,6 +54,46 @@ class _GroupMemberCardState extends State<GroupMemberCard> {
     });
   }
 
+  void _showRemoveGroupMemberDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: Text("Remove Member"),
+            content: Text(
+                "Do you want to remove ${widget.groupMember.userData.displayName} from ${widget.groupMember.groupName}?"),
+            actions: <Widget>[
+              FlatButton(
+                  child: Text("Cancel"),
+                  onPressed: () => Navigator.pop(dialogContext)),
+              FlatButton(
+                child: Text("Remove"),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _confirmRemoveGroupMember();
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  void _confirmRemoveGroupMember() async {
+    setState(() {
+      _waitingForResponse = true;
+    });
+
+    ErrorMessage error = await _httpService.removeGroupMember(
+        groupId: widget.groupMember.groupId,
+        groupMemberId: widget.groupMember.userData.uid);
+
+    if (error != null) {
+      setState(() {
+        _waitingForResponse = false;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -101,6 +141,7 @@ class _GroupMemberCardState extends State<GroupMemberCard> {
         width: 20,
       )
     ];
+
     if (_waitingForResponse) {
       rowWidgets.addAll(<Widget>[
         Text(widget.groupMember.userData.displayName,
@@ -142,7 +183,7 @@ class _GroupMemberCardState extends State<GroupMemberCard> {
             child: FlatButton(
               textColor: theme.textTheme.display2.color,
               child: Icon(Icons.delete),
-              onPressed: () => null,
+              onPressed: () => _showRemoveGroupMemberDialog(context),
             ))
       ]);
     } else {
