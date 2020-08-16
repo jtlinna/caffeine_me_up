@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>70204360665-rt9o6hrp42qagb64fntgmc3egkashcrb.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.70204360665-rt9o6hrp42qagb64fntgmc3egkashcrb</string>
+	<key>API_KEY</key>
+	<string>AIzaSyB_KEpyMlG7i88Qy9wkc9-ivj47NExeZho</string>
+	<key>GCM_SENDER_ID</key>
+	<string>70204360665</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>tech.tiberon.drinks-on-me.prod</string>
+	<key>PROJECT_ID</key>
+	<string>drinks-on-me-prod-825b6</string>
+	<key>STORAGE_BUCKET</key>
+	<string>drinks-on-me-prod-825b6.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:70204360665:ios:284659bdafc4c215673bc8</string>
+	<key>DATABASE_URL</key>
+	<string>https://drinks-on-me-prod-825b6.firebaseio.com</string>
+</dict>
+</plist>

@@ -6,8 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class StorageService {
-  final FirebaseStorage _firebaseStorage =
-      FirebaseStorage(storageBucket: 'gs://drinks-on-me-dev.appspot.com');
+  final FirebaseStorage _firebaseStorage = FirebaseStorage();
 
   Future<StorageResponse> uploadAvatar(
       {@required String uid, @required File avatar}) async {
@@ -22,7 +21,9 @@ class StorageService {
       return new StorageResponse(downloadUrl: downloadUrl, errorMessage: null);
     } catch (e) {
       print('uploadAvatar failed : $e');
-      return new StorageResponse(downloadUrl: null, errorMessage: new ErrorMessage(message: 'Something went wrong'));
+      return new StorageResponse(
+          downloadUrl: null,
+          errorMessage: new ErrorMessage(message: 'Something went wrong'));
     }
   }
 }

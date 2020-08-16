@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "cafeine-me-up"
+    "default": "cafeine-me-up",
+    "dev": "drinks-on-me-dev",
+    "prod": "drinks-on-me-prod-825b6"
   }
 }

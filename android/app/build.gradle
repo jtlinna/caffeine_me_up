@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "tech.tiberon.drinks_on_me.dev"
+        applicationId "tech.tiberon.drinks_on_me"
         minSdkVersion 16
         targetSdkVersion 28
         multiDexEnabled true
@@ -51,6 +51,20 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+        }
+    }
+
+    flavorDimensions "app"
+    productFlavors {
+
+        dev {
+            dimension "app"
+            applicationIdSuffix ".dev"
+        }
+
+        prod {
+            dimension "app"
+            applicationIdSuffix ".prod"
         }
     }
 }
